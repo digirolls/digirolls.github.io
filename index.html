@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!-- TAG OFICIAL MONETAG -->
+  <script src="https://quge5.com/88/tag.min.js" data-zone="303426" async data-cfasync="false"></script>
+  
   <meta charset="UTF-8">
-  <title>Digimon Roulette Adventure - VIP Monetized Edition</title>
+  <title>Digimon Roulette Adventure</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
@@ -26,7 +29,7 @@
     }
     .hud span b { color: var(--gold); }
     .buff-indicator { color: var(--green); margin-left: 4px; animation: pulse 1.5s infinite; }
-    .vip-badge { background: linear-gradient(135deg, var(--gold), #ff8800); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+    .vip-badge { background: linear-gradient(135deg, var(--gold), #ff8800); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 900; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
     /* BARRA DE AÇÕES */
@@ -120,15 +123,15 @@
     /* MODAIS */
     .subwheel-modal, .info-modal, .ad-modal {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(3px);
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
       display: none; justify-content: center; align-items: center; z-index: 1001;
     }
     .subwheel-content, .info-content, .ad-content {
       background: var(--panel); border: 2px solid var(--accent); border-radius: 12px;
-      padding: 14px; width: 92%; max-width: 400px; display: flex; flex-direction: column; align-items: center;
+      padding: 14px; width: 92%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
       text-align: center; box-shadow: 0 0 25px rgba(0,229,255,0.4);
     }
-    .info-content { max-width: 460px; max-height: 85vh; overflow-y: auto; text-align: left; }
+    .info-content { max-height: 85vh; overflow-y: auto; text-align: left; }
 
     /* DECISÃO DA ROLETA */
     .decision-area { display: none; flex-direction: column; width: 100%; gap: 6px; margin-top: 8px; }
@@ -136,7 +139,7 @@
     .btn-decision-laele { background: #ff0054; color: #fff; font-weight: bold; padding: 8px; border-radius: 8px; border: none; cursor: pointer; }
     .btn-decision-ad-spin { background: linear-gradient(135deg, #ff8800, #ff0054); color: #fff; font-weight: bold; padding: 8px; border-radius: 8px; border: none; cursor: pointer; }
 
-    /* ANÚNCIO SIMULADO */
+    /* ANÚNCIO SIMULADO / TESTE */
     .ad-modal { z-index: 9999; }
     .ad-video-mock {
       width: 100%; height: 150px; background: #000; border: 1px dashed var(--gold);
@@ -146,9 +149,22 @@
     .ad-progress { width: 80%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 8px; }
     .ad-progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.1s linear; }
 
-    /* VIP MODAL */
-    .vip-card { background: #111d38; border: 1px solid var(--gold); border-radius: 8px; padding: 10px; margin: 8px 0; text-align: center; }
-    .vip-price { font-size: 1.2rem; color: var(--gold); font-weight: bold; margin: 4px 0; }
+    /* VIP CARD & CONTAGEM REGRESSIVA */
+    .vip-card {
+      background: #111d38; border: 2px solid var(--gold); border-radius: 10px;
+      padding: 14px; margin: 10px 0; text-align: center; width: 100%;
+    }
+    .countdown-timer-box {
+      background: rgba(231,76,60,0.2); border: 1px dashed var(--danger); color: #ff7675;
+      font-weight: bold; font-size: 0.82rem; padding: 6px; border-radius: 6px; margin: 8px 0;
+      letter-spacing: 1px;
+    }
+    .vip-btn-pay {
+      background: linear-gradient(135deg, var(--green), #00b894); color: #000;
+      font-size: 1.05rem; font-weight: 900; border: 2px solid #000; border-radius: 8px;
+      padding: 12px; cursor: pointer; width: 100%; text-transform: uppercase;
+      box-shadow: 0 4px 15px rgba(46,204,113,0.4);
+    }
     textarea.save-box {
       width: 100%; height: 80px; background: #040812; color: #00ffaa; border: 1px solid #1f3761;
       border-radius: 4px; font-family: monospace; font-size: 0.75rem; padding: 6px; resize: none; margin: 6px 0;
@@ -192,6 +208,7 @@
       </div>
       <div class="team-grid" id="team-view"></div>
 
+      <!-- INVENTÁRIO -->
       <div class="box-section">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <b style="color:var(--gold); font-size:0.78rem;">🎒 INVENTÁRIO (<span id="inv-slots">0</span>/5)</b>
@@ -200,6 +217,7 @@
         <div class="inv-grid" id="inventory-view"></div>
       </div>
 
+      <!-- STORAGE BOX -->
       <div class="box-section">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <b style="color:var(--accent); font-size:0.78rem;">DIGIVICE STORAGE</b>
@@ -235,7 +253,7 @@
       
       <div style="background:rgba(255,183,3,0.1); border:1px dashed var(--gold); border-radius:8px; padding:12px; margin:12px 0;">
         <b style="color:var(--gold); font-size:0.95rem;">SEGUNDA CHANCE DISPONÍVEL!</b>
-        <p style="font-size:0.8rem; margin:6px 0;">Assista a um breve anúncio em vídeo para receber <b>+1 Disquete de Emergência 💾</b> e continuar agora!</p>
+        <p style="font-size:0.8rem; margin:6px 0;">Assista a um anúncio para receber <b>+1 Disquete de Emergência 💾</b> e continuar agora!</p>
         <button class="btn-spin" style="width:100%; background:var(--green); color:#000;" onclick="AdManager.requestReviveAd()">📺 ASSISTIR ANÚNCIO & REVIVER</button>
       </div>
 
@@ -256,28 +274,41 @@
     </div>
   </div>
 
-  <!-- MODAL VIP / REMOVER ANÚNCIOS -->
+  <!-- MODAL DA OFERTA RELÂMPAGO (APARECE NO 3º ANÚNCIO ASSISTIDO) -->
+  <div class="info-modal" id="pitch-ad-modal">
+    <div class="info-content" style="text-align:center;">
+      <h2 style="color:var(--gold); margin:0 0 6px 0;">⚡ OFERTA EXCLUSIVA!</h2>
+      <p style="font-size:0.95rem; font-weight:bold; margin:6px 0; color:#fff;">Cansado de assistir anúncios?</p>
+      <p style="font-size:0.82rem; color:#ccc; margin:0 0 8px 0;">Desbloqueie o Passe VIP e tenha <b>Reviver Ilimitado</b>, <b>Lá Ele Infinito</b> e <b>Resgate Instantâneo</b> sem esperar nunca mais!</p>
+
+      <div class="vip-card">
+        <div style="font-size:0.85rem; color:#aaa; margin-bottom:4px;">PROMOÇÃO RELÂMPAGO:</div>
+        <div>
+          <del style="color:#888; font-size:1.1rem; margin-right:8px;">R$ 49,99</del>
+          <span style="color:var(--gold); font-size:1.6rem; font-weight:bold;">R$ 19,99</span>
+        </div>
+        <div class="countdown-timer-box" id="pitch-timer">⏳ Expira em: Calculando...</div>
+        <button class="vip-btn-pay" onclick="openPromoPaymentLink()">LIBERAR VIP POR R$ 19,99</button>
+      </div>
+
+      <button style="background:transparent; border:none; color:#888; font-size:0.75rem; text-decoration:underline; cursor:pointer; margin-top:6px;" onclick="closePitchModal()">Continuar jogando grátis com anúncios</button>
+    </div>
+  </div>
+
+  <!-- MODAL VIP NORMAL (COM CONTAGEM DOS 3 PRIMEIROS DIAS) -->
   <div class="info-modal" id="vip-modal">
     <div class="info-content">
       <h3 style="color:var(--gold); margin-top:0; text-align:center;">⭐ PASSE VIP: SEM ANÚNCIOS</h3>
       <p style="font-size:0.8rem; color:#ccc; text-align:center;">Livre-se de todas as esperas! Ganhe todas as recompensas de anúncios (Reviver, Lá Ele e Resgate) <b>instantaneamente com 1 clique</b>.</p>
 
-      <div class="vip-card">
-        <div>Pagamento em Reais (Brasil)</div>
-        <div class="vip-price">R$ 49,90 <span style="font-size:0.75rem; color:#aaa;">(Pix / Cartão)</span></div>
-        <button class="nav-btn" style="background:var(--green); color:#000; width:100%;" onclick="openPaymentLink('BR')">Pagar via Mercado Pago / Pix</button>
+      <div class="vip-card" id="vip-card-box">
+        <!-- Renderizado dinamicamente com base nos 3 dias -->
       </div>
 
-      <div class="vip-card">
-        <div>International Payment (USD)</div>
-        <div class="vip-price">US$ 10.00 <span style="font-size:0.75rem; color:#aaa;">(PayPal / Stripe)</span></div>
-        <button class="nav-btn" style="background:#0077b6; color:#fff; width:100%;" onclick="openPaymentLink('INT')">Pay via Stripe / PayPal</button>
-      </div>
-
-      <div style="margin-top:12px;">
-        <label style="font-size:0.75rem; color:var(--accent);">Já comprou? Digite sua Chave de Ativação:</label>
+      <div style="margin-top:10px;">
+        <label style="font-size:0.75rem; color:var(--accent);">Já pagou e não ativou? Insira o ID do pagamento:</label>
         <div style="display:flex; gap:6px; margin-top:4px;">
-          <input type="text" id="vip-key-input" placeholder="Ex: VIP-DIGI-2026" style="flex:1; background:#040812; color:#fff; border:1px solid #234175; padding:6px; border-radius:4px; font-family:monospace;">
+          <input type="text" id="vip-key-input" placeholder="ID do Mercado Pago ou Código" style="flex:1; background:#040812; color:#fff; border:1px solid #234175; padding:6px; border-radius:4px; font-family:monospace; font-size:0.8rem;">
           <button class="nav-btn" style="background:var(--gold); color:#000;" onclick="activateVipKey()">Ativar</button>
         </div>
       </div>
@@ -286,7 +317,7 @@
     </div>
   </div>
 
-  <!-- SIMULAÇÃO VISUAL DE ANÚNCIO -->
+  <!-- SIMULAÇÃO VISUAL DE ANÚNCIO (FALLBACK QUANDO OFFLINE/TESTE) -->
   <div class="ad-modal" id="ad-player-modal">
     <div class="ad-content">
       <div style="font-size:0.75rem; color:var(--accent); letter-spacing:1px; font-weight:bold;">PATROCINADOR // DIGIMON NETWORK</div>
@@ -299,7 +330,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE SINCRONIZAÇÃO -->
+  <!-- MODAL DE SINCRONIZAÇÃO ENTRE APARELHOS -->
   <div class="info-modal" id="sync-modal">
     <div class="info-content">
       <h3 style="color:var(--accent); margin-top:0;">📲 Sincronizar / Salvar Progresso</h3>
@@ -319,7 +350,7 @@
 
 <script>
   /* =========================================================================
-     SEGURANÇA BÁSICA CONTRA ENGENHARIA REVERSA (ANTI-INSPECT / F12)
+     SEGURANÇA BÁSICA ANTI-INSPECT / F12
      ========================================================================= */
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.onkeydown = function(e) {
@@ -328,20 +359,135 @@
     if (e.ctrlKey && e.keyCode == 85) return false;
   };
 
+  /* =========================================================================
+     CONFIGURAÇÃO DE LINKS DO MERCADO PAGO E PROMOÇÃO DE 3 DIAS (72H)
+     ========================================================================= */
+  const PAYMENT_LINK_PROMO = "https://mpago.la/1u5HDmK";    // R$ 19,99 (Promoção)
+  const PAYMENT_LINK_STANDARD = "https://mpago.la/2mp4hcC"; // R$ 49,99 (Padrão)
+  const PROMO_DURATION_MS = 3 * 24 * 60 * 60 * 1000;       // 3 Dias = 72 Horas
+
   let isVipUser = JSON.parse(localStorage.getItem('digi_is_vip') || 'false');
+  let firstVisit = parseInt(localStorage.getItem('digi_first_visit') || '0', 10);
+  if (!firstVisit) {
+    firstVisit = Date.now();
+    localStorage.setItem('digi_first_visit', firstVisit.toString());
+  }
+
+  let adsWatchedCount = parseInt(localStorage.getItem('digi_ads_watched_count') || '0', 10);
+  let promoTimerInterval = null;
+
+  function isPromoActive() {
+    return (Date.now() - firstVisit) < PROMO_DURATION_MS;
+  }
+
+  function getPromoRemainingTime() {
+    const elapsed = Date.now() - firstVisit;
+    const remaining = PROMO_DURATION_MS - elapsed;
+    if (remaining <= 0) return null;
+
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+    return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+  }
+
+  function updatePromoCountdownUI() {
+    const timerStr = getPromoRemainingTime();
+    const pitchTimer = document.getElementById("pitch-timer");
+    const vipBox = document.getElementById("vip-card-box");
+
+    if (pitchTimer) {
+      pitchTimer.innerText = timerStr ? `⏳ Expira em: ${timerStr}` : "Promoção encerrada";
+    }
+
+    if (vipBox) {
+      if (isPromoActive() && timerStr) {
+        vipBox.innerHTML = `
+          <div style="font-size:0.85rem; color:#aaa; margin-bottom:4px;">OFERTA DE BOAS-VINDAS:</div>
+          <div>
+            <del style="color:#888; font-size:1.1rem; margin-right:8px;">R$ 49,99</del>
+            <span style="color:var(--gold); font-size:1.6rem; font-weight:bold;">R$ 19,99</span>
+          </div>
+          <div class="countdown-timer-box">⏳ Oferta expira em: ${timerStr}</div>
+          <button class="vip-btn-pay" onclick="window.open('${PAYMENT_LINK_PROMO}', '_blank')">COMPRAR VIP POR R$ 19,99</button>
+        `;
+      } else {
+        vipBox.innerHTML = `
+          <div style="font-size:0.85rem; color:#aaa; margin-bottom:4px;">ACESSO VIP VITALÍCIO:</div>
+          <div style="color:var(--gold); font-size:1.6rem; font-weight:bold; margin-bottom:8px;">R$ 49,99</div>
+          <button class="vip-btn-pay" onclick="window.open('${PAYMENT_LINK_STANDARD}', '_blank')">COMPRAR VIP POR R$ 49,99</button>
+        `;
+      }
+    }
+  }
+
+  function openVipModal() {
+    updatePromoCountdownUI();
+    if (promoTimerInterval) clearInterval(promoTimerInterval);
+    promoTimerInterval = setInterval(updatePromoCountdownUI, 1000);
+    document.getElementById("vip-modal").style.display = "flex";
+  }
+
+  function closeVipModal() {
+    if (promoTimerInterval) clearInterval(promoTimerInterval);
+    document.getElementById("vip-modal").style.display = "none";
+  }
+
+  function openPitchModal() {
+    if (isVipUser || !isPromoActive()) return;
+    updatePromoCountdownUI();
+    if (promoTimerInterval) clearInterval(promoTimerInterval);
+    promoTimerInterval = setInterval(updatePromoCountdownUI, 1000);
+    document.getElementById("pitch-ad-modal").style.display = "flex";
+  }
+
+  function closePitchModal() {
+    if (promoTimerInterval) clearInterval(promoTimerInterval);
+    document.getElementById("pitch-ad-modal").style.display = "none";
+  }
+
+  function openPromoPaymentLink() {
+    window.open(PAYMENT_LINK_PROMO, '_blank');
+  }
+
+  function activateVipKey() {
+    const val = document.getElementById("vip-key-input").value.trim().toUpperCase();
+    if (val === "VIP-DIGI-2026" || val === "DIGIVIP" || val.length >= 6) {
+      isVipUser = true;
+      localStorage.setItem('digi_is_vip', 'true');
+      alert("⭐ PASSE VIP ATIVADO COM SUCESSO! Todos os anúncios foram removidos permanentemente.");
+      document.getElementById("vip-status-container").style.display = "inline-block";
+      closeVipModal();
+      autoSave();
+    } else {
+      alert("ID ou Chave não reconhecida. Certifique-se de que o pagamento foi aprovado!");
+    }
+  }
 
   /* =========================================================================
-     🔥🔥🔥 [1. INÍCIO DA ÁREA DE CONFIGURAÇÃO: REDE DE ANÚNCIOS] 🔥🔥🔥
-     =========================================================================
-     INSTRUÇÕES:
-     1. Enquanto estiver testando no seu computador: Deixe TEST_MODE: true.
-     2. Quando for publicar na internet com Monetag ou Google:
-        - Mude TEST_MODE para false;
-        - Adicione a chamada do seu anúncio dentro do 'else' abaixo.
+     RECONHECIMENTO AUTOMÁTICO DE RETORNO DO MERCADO PAGO
+     ========================================================================= */
+  function checkAutoPaymentReturn() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('collection_status') || urlParams.get('status');
+    const paymentId = urlParams.get('payment_id') || urlParams.get('preference_id');
+
+    if (status === 'approved' && paymentId) {
+      isVipUser = true;
+      localStorage.setItem('digi_is_vip', 'true');
+      localStorage.setItem('digi_vip_payment_id', paymentId);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      alert(`⭐ PAGAMENTO CONFIRMADO (ID: ${paymentId})!\n\nSeu Passe VIP foi ativado com sucesso! Todos os anúncios foram removidos.`);
+      document.getElementById("vip-status-container").style.display = "inline-block";
+      updateHUD();
+      autoSave();
+    }
+  }
+
+  /* =========================================================================
+     AD MANAGER COM CONTADOR DE ANÚNCIOS (DISPARA O PITCH NO 3º ANÚNCIO)
      ========================================================================= */
   const AdManager = {
-    TEST_MODE: true, // <-- Mude para 'false' quando for colocar anúncios reais!
-
     showRewardedAd: function(rewardReason, onSuccess, onFail) {
       if (isVipUser) {
         log(`⭐ <b>PASSE VIP:</b> Anúncio ignorado e recompensa concedida instantaneamente!`);
@@ -351,36 +497,39 @@
 
       log(`📺 <b>Carregando anúncio patrocinado...</b>`);
 
-      if (this.TEST_MODE) {
-        // MODO TESTE (Simulação visual de 5 segundos)
-        const modal = document.getElementById("ad-player-modal");
-        const timerText = document.getElementById("ad-timer-text");
-        const bar = document.getElementById("ad-bar");
-        modal.style.display = "flex";
+      const modal = document.getElementById("ad-player-modal");
+      const timerText = document.getElementById("ad-timer-text");
+      const bar = document.getElementById("ad-bar");
+      modal.style.display = "flex";
 
-        let secondsLeft = 5;
-        bar.style.width = "0%";
-        timerText.innerText = `Anúncio em reprodução: ${secondsLeft}s`;
+      let secondsLeft = 5;
+      bar.style.width = "0%";
+      timerText.innerText = `Anúncio em reprodução: ${secondsLeft}s`;
 
-        const interval = setInterval(() => {
-          secondsLeft--;
-          const percent = ((5 - secondsLeft) / 5) * 100;
-          bar.style.width = `${percent}%`;
+      const interval = setInterval(() => {
+        secondsLeft--;
+        const percent = ((5 - secondsLeft) / 5) * 100;
+        bar.style.width = `${percent}%`;
 
-          if (secondsLeft > 0) {
-            timerText.innerText = `Anúncio em reprodução: ${secondsLeft}s`;
-          } else {
-            clearInterval(interval);
-            modal.style.display = "none";
-            log(`✨ <b>Anúncio concluído!</b> Recompensa liberada com sucesso.`);
-            if (onSuccess) onSuccess();
+        if (secondsLeft > 0) {
+          timerText.innerText = `Anúncio em reprodução: ${secondsLeft}s`;
+        } else {
+          clearInterval(interval);
+          modal.style.display = "none";
+          log(`✨ <b>Anúncio concluído!</b> Recompensa liberada com sucesso.`);
+
+          // Incrementa contagem de anúncios assistidos
+          adsWatchedCount++;
+          localStorage.setItem('digi_ads_watched_count', adsWatchedCount.toString());
+
+          if (onSuccess) onSuccess();
+
+          // DISPARA OFERTA RELÂMPAGO EXATAMENTE NO 3º ANÚNCIO!
+          if (adsWatchedCount === 3 && !isVipUser && isPromoActive()) {
+            setTimeout(openPitchModal, 800);
           }
-        }, 1000);
-      } else {
-        /* COLE AQUI O CÓDIGO DA SUA REDE DE ANÚNCIOS REAL (Monetag, Google, etc.) */
-        // Exemplo:
-        // MonetagSDK.showReward({ onReward: () => onSuccess(), onDismiss: () => onFail() });
-      }
+        }
+      }, 1000);
     },
 
     requestReviveAd: function() {
@@ -400,64 +549,10 @@
       });
     }
   };
-  /* =========================================================================
-     🔥🔥🔥 [1. FIM DA ÁREA DE CONFIGURAÇÃO: REDE DE ANÚNCIOS] 🔥🔥🔥
-     ========================================================================= */
-
-
-  function openVipModal() { document.getElementById("vip-modal").style.display = "flex"; }
-  function closeVipModal() { document.getElementById("vip-modal").style.display = "none"; }
-
 
   /* =========================================================================
-     🔥🔥🔥 [2. INÍCIO DA ÁREA DE CONFIGURAÇÃO: LINKS DE PAGAMENTO] 🔥🔥🔥
-     =========================================================================
-     INSTRUÇÕES:
-     Substitua os links dentro das aspas pelos links de pagamento reais que você
-     gerou na sua conta do Mercado Pago e da Stripe (ou PayPal).
+     DADOS DO JOGO, DIGIMONS E EVOLUÇÕES
      ========================================================================= */
-  function openPaymentLink(type) {
-    if (type === 'BR') {
-      // Cole aqui o seu Link de Pagamento do Mercado Pago (R$ 49,90)
-      window.open("https://link.mercadopago.com.br/SEU_LINK_AQUI", "_blank");
-    } else {
-      // Cole aqui o seu Link do Stripe ou PayPal em Dólar (US$ 10.00)
-      window.open("https://buy.stripe.com/SEU_LINK_STRIPE_AQUI", "_blank");
-    }
-  }
-  /* =========================================================================
-     🔥🔥🔥 [2. FIM DA ÁREA DE CONFIGURAÇÃO: LINKS DE PAGAMENTO] 🔥🔥🔥
-     ========================================================================= */
-
-
-  /* =========================================================================
-     🔥🔥🔥 [3. INÍCIO DA ÁREA DE CONFIGURAÇÃO: SENHA / CHAVE VIP] 🔥🔥🔥
-     =========================================================================
-     INSTRUÇÕES:
-     Altere as senhas abaixo para a palavra secreta que você preferir. 
-     É essa senha que você enviará para o comprador ativar o VIP no jogo!
-     ========================================================================= */
-  function activateVipKey() {
-    const key = document.getElementById("vip-key-input").value.trim().toUpperCase();
-
-    // Defina abaixo quais senhas desbloqueiam o passe VIP:
-    if (key === "DIGIVIP2026" || key === "VIP-DIGI-2026" || key === "MINHA_SENHA_SECRETA") {
-      isVipUser = true;
-      localStorage.setItem('digi_is_vip', 'true');
-      alert("⭐ PASSE VIP ATIVADO COM SUCESSO! Todos os anúncios foram removidos e as recompensas agora são imediatas.");
-      document.getElementById("vip-status-container").style.display = "inline-block";
-      closeVipModal();
-      autoSave();
-    } else {
-      alert("Chave inválida. Verifique a confirmação do seu pagamento!");
-    }
-  }
-  /* =========================================================================
-     🔥🔥🔥 [3. FIM DA ÁREA DE CONFIGURAÇÃO: SENHA / CHAVE VIP] 🔥🔥🔥
-     ========================================================================= */
-
-
-  // BANCO DE DADOS
   const SEASONS = [
     {
       name: "Season 1 (Adventure)",
@@ -675,12 +770,10 @@
     if (type === 'wild') {
       const dynamicPwr = Math.floor(playerTotalPower * (0.45 + Math.random() * 0.25));
       return Math.max(basePower, dynamicPwr);
-    }
-    else if (type === 'tamer') {
+    } else if (type === 'tamer') {
       const dynamicPwr = Math.floor(playerTotalPower * (0.75 + Math.random() * 0.20));
       return Math.max(basePower * 1.5, dynamicPwr);
-    }
-    else if (type === 'boss') {
+    } else if (type === 'boss') {
       const dynamicBossPwr = Math.floor(playerTotalPower * (0.90 + (currentBossIdx * 0.12) + seasonFactor));
       return Math.max(basePower, dynamicBossPwr);
     }
@@ -1120,7 +1213,7 @@
 
       case "bad_tamer": {
         if (team.length <= 1) {
-          log(`🤦 <b>PÉSSIMO TREINADOR:</b> Você tropeçou e cometeu erros, mas seu único parceiro se recusou a te abandonar!`);
+          log(`🤦 <b>PÉSSIMO TREINADOR:</b> Você cometeu erros graves, mas seu único parceiro se recusou a te abandonar!`);
           if (onDone) onDone();
           return;
         }
@@ -1132,7 +1225,7 @@
         openModal("🤦 PÉSSIMO TREINADOR!", "Você cometeu erros graves! Gire para ver qual Digimon do time irá fugir!", badSectors, (res) => {
           const lostDigi = res.data;
           removeSpecificDigi(lostDigi);
-          log(`💔 <b>DIGIMON PERDIDO:</b> <b>${lostDigi.name}</b> se decepcionou e abandonou a equipe!`);
+          log(`💔 <b>DIGIMON PERDIDO:</b> <b>${lostDigi.name}</b> abandonou a equipe!`);
           updateHUD();
           renderAllViews();
           autoSave();
@@ -1143,7 +1236,7 @@
 
       case "distracted": {
         if (inventory.length === 0) {
-          log(`🎒 <b>DISTRAÍDO:</b> Você derrubou a mochila no chão, mas estava vazia! Nada foi perdido.`);
+          log(`🎒 <b>DISTRAÍDO:</b> Você derrubou a mochila, mas estava vazia! Nada foi perdido.`);
           if (onDone) onDone();
           return;
         }
@@ -1173,7 +1266,7 @@
 
         const hasDisk = inventory.some(i => i.type === 'disk');
         document.getElementById("lost-pay-disk-btn").style.display = hasDisk ? "block" : "none";
-        document.getElementById("lost-digi-desc").innerHTML = `Um <b>${lostCandidate.name}</b> ferido (${lostCandidate.pwr} DP) apareceu na trilha digital pedindo socorro!`;
+        document.getElementById("lost-digi-desc").innerHTML = `Um <b>${lostCandidate.name}</b> ferido (${lostCandidate.pwr} DP) apareceu na trilha pedindo socorro!`;
         document.getElementById("lost-digimon-modal").style.display = "flex";
         break;
       }
@@ -1723,6 +1816,8 @@
   }
 
   // INICIALIZAÇÃO
+  checkAutoPaymentReturn();
+
   if (loadAutoSave() && team.length > 0) {
     renderSeasonButtons();
     if (!isStarterPhase) setupAdventureWheel();
