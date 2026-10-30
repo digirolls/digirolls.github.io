@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Digimon Roulette Adventure - VIP Monetized Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #070c18; --panel: #0f1c36; --card: #182a4d;
+      --accent: #00e5ff; --gold: #ffb703; --danger: #e63946;
+      --green: #2ecc71; --purple: #9b5de5; --text: #eaf4fc;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      display: flex; flex-direction: column; align-items: center; padding: 10px; min-height: 100vh;
+      user-select: none;
+    }
+    h1 { color: var(--accent); margin: 4px 0 6px 0; text-shadow: 0 0 10px rgba(0,229,255,0.6); font-size: 1.5rem; text-align: center; }
+
+    /* HUD */
+    .hud {
+      display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+      background: var(--panel); border: 1px solid var(--accent); padding: 6px 14px;
+      border-radius: 20px; margin-bottom: 8px; font-weight: bold; font-size: 0.8rem;
+    }
+    .hud span b { color: var(--gold); }
+    .buff-indicator { color: var(--green); margin-left: 4px; animation: pulse 1.5s infinite; }
+    .vip-badge { background: linear-gradient(135deg, var(--gold), #ff8800); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* BARRA DE AÇÕES */
+    .action-nav { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; }
+    .nav-btn {
+      background: var(--panel); border: 1px solid #234175; color: var(--text);
+      padding: 5px 10px; border-radius: 12px; cursor: pointer; font-size: 0.75rem; font-weight: bold;
+    }
+    .nav-btn.vip { background: linear-gradient(135deg, #f72585, var(--gold)); color: #fff; border-color: var(--gold); }
+    .nav-btn.reset { background: #3a0ca3; border-color: #7209b7; color: #ffb703; }
+    .nav-btn.sync { background: linear-gradient(135deg, #0077b6, #0096c7); border-color: var(--accent); }
+    .season-btn {
+      background: var(--panel); border: 1px solid #234175; color: var(--text);
+      padding: 5px 8px; border-radius: 12px; cursor: pointer; font-size: 0.72rem; font-weight: bold;
+    }
+    .season-btn.active { background: var(--accent); color: #000; }
+    .season-btn.locked { background: #161c28; color: #556; border-color: #223; cursor: not-allowed; }
+
+    /* GRID */
+    .main-grid {
+      display: grid; grid-template-columns: 340px 1fr; gap: 14px; max-width: 1150px; width: 100%;
+    }
+    @media(max-width: 880px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--panel); border: 1px solid #1f3761; border-radius: 10px;
+      padding: 12px; display: flex; flex-direction: column; align-items: center; position: relative;
+    }
+    .interactive-panel { z-index: 1002; }
+
+    canvas { background: transparent; max-width: 100%; }
+
+    button.btn-spin {
+      background: linear-gradient(135deg, var(--gold), #f77f00);
+      border: 2px solid #000; color: #000; font-weight: 900; font-size: 0.95rem;
+      padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-top: 6px;
+      box-shadow: 0 4px 10px rgba(255,183,3,0.4); text-transform: uppercase; width: 85%;
+    }
+    button.btn-spin:active { transform: scale(0.96); }
+    button.btn-spin:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; }
+
+    /* TIME / STORAGE */
+    .team-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 6px; width: 100%; margin-top: 6px;
+    }
+    .digi-card {
+      background: var(--card); border: 1px solid #284478; border-radius: 6px;
+      padding: 5px; text-align: center; display: flex; flex-direction: column; align-items: center;
+      position: relative;
+    }
+    .digi-card img {
+      width: 50px; height: 50px; object-fit: contain; background: rgba(0,0,0,0.4);
+      border-radius: 6px; border: 1px solid #335591; margin-bottom: 2px;
+    }
+    .badge { font-size: 0.62rem; padding: 1px 4px; border-radius: 8px; background: var(--accent); color: #000; font-weight: bold; }
+    .card-actions { display: flex; gap: 4px; margin-top: 4px; width: 100%; }
+    .card-actions button {
+      flex: 1; border: none; font-size: 0.62rem; padding: 3px; border-radius: 3px;
+      cursor: pointer; background: #2a4365; color: #fff; font-weight: bold;
+    }
+
+    /* INVENTÁRIO */
+    .box-section {
+      width: 100%; background: #080f1d; border: 1px dashed var(--accent);
+      border-radius: 6px; padding: 8px; margin-top: 8px;
+    }
+    .inv-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 6px; margin-top: 6px;
+    }
+    .inv-card {
+      background: #142340; border: 1px solid var(--gold); border-radius: 6px;
+      padding: 5px; font-size: 0.7rem; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .inv-card button {
+      background: var(--green); border: none; color: #000; font-weight: bold;
+      border-radius: 3px; padding: 3px; cursor: pointer; margin-top: 4px; font-size: 0.68rem;
+    }
+    .storage-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+      gap: 6px; max-height: 110px; overflow-y: auto; margin-top: 6px;
+    }
+
+    /* LOG */
+    .console-log {
+      width: 100%; height: 85px; background: #03060c; border: 1px solid #172847;
+      border-radius: 6px; padding: 6px; overflow-y: auto; font-size: 0.72rem; color: #90e0ef; margin-top: 8px;
+    }
+
+    /* MODAIS */
+    .subwheel-modal, .info-modal, .ad-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(3px);
+      display: none; justify-content: center; align-items: center; z-index: 1001;
+    }
+    .subwheel-content, .info-content, .ad-content {
+      background: var(--panel); border: 2px solid var(--accent); border-radius: 12px;
+      padding: 14px; width: 92%; max-width: 400px; display: flex; flex-direction: column; align-items: center;
+      text-align: center; box-shadow: 0 0 25px rgba(0,229,255,0.4);
+    }
+    .info-content { max-width: 460px; max-height: 85vh; overflow-y: auto; text-align: left; }
+
+    /* DECISÃO DA ROLETA */
+    .decision-area { display: none; flex-direction: column; width: 100%; gap: 6px; margin-top: 8px; }
+    .btn-decision-accept { background: var(--green); color: #000; font-weight: bold; padding: 8px; border-radius: 8px; border: none; cursor: pointer; }
+    .btn-decision-laele { background: #ff0054; color: #fff; font-weight: bold; padding: 8px; border-radius: 8px; border: none; cursor: pointer; }
+    .btn-decision-ad-spin { background: linear-gradient(135deg, #ff8800, #ff0054); color: #fff; font-weight: bold; padding: 8px; border-radius: 8px; border: none; cursor: pointer; }
+
+    /* ANÚNCIO SIMULADO */
+    .ad-modal { z-index: 9999; }
+    .ad-video-mock {
+      width: 100%; height: 150px; background: #000; border: 1px dashed var(--gold);
+      border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      margin: 10px 0; color: #fff; font-family: monospace;
+    }
+    .ad-progress { width: 80%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+    .ad-progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.1s linear; }
+
+    /* VIP MODAL */
+    .vip-card { background: #111d38; border: 1px solid var(--gold); border-radius: 8px; padding: 10px; margin: 8px 0; text-align: center; }
+    .vip-price { font-size: 1.2rem; color: var(--gold); font-weight: bold; margin: 4px 0; }
+    textarea.save-box {
+      width: 100%; height: 80px; background: #040812; color: #00ffaa; border: 1px solid #1f3761;
+      border-radius: 4px; font-family: monospace; font-size: 0.75rem; padding: 6px; resize: none; margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>DIGIMON ROULETTE ADVENTURE</h1>
+
+  <div class="hud">
+    <div id="vip-status-container" style="display:none;"><span class="vip-badge">⭐ VIP ATIVADO</span></div>
+    <div>Chefes Restantes: <span id="bosses-left" style="color:var(--danger)">0/0</span></div>
+    <div>Próximo Chefe: <span id="boss-timer" style="color:var(--gold)">5 giros</span></div>
+    <div>Inventário: <span id="inv-count-hud">0/5</span></div>
+    <div>Taxa Digivice: <span id="evo-rate" style="color:var(--green)">25%</span></div>
+    <div>Poder: <span id="team-power">0 DP</span><span id="motivate-tag" class="buff-indicator" style="display:none;">(+35 Motivado)</span><span id="rng-tag" class="buff-indicator" style="display:none;">(+30% RNG)</span></div>
+  </div>
+
+  <div class="action-nav">
+    <button class="nav-btn vip" onclick="openVipModal()">⭐ VIP / Sem Anúncios</button>
+    <button class="nav-btn reset" onclick="resetCurrentRun()">🔄 Reiniciar Jornada</button>
+    <button class="nav-btn sync" onclick="openSyncModal()">📲 Salvar / Sincronizar</button>
+    <button class="nav-btn" style="background:#5a189a; border-color:#9d4edd;" onclick="spinUnlockedSeason()">🎲 Roletar Temporada</button>
+    <div id="seasons-container" style="display:inline-flex; gap:4px; flex-wrap:wrap;"></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <h3 id="wheel-title" style="margin:0 0 6px 0; color:var(--accent); font-size:1rem;">SORTEIO DO INICIAL</h3>
+      <canvas id="wheel" width="310" height="310"></canvas>
+      <button class="btn-spin" id="spin-btn" onclick="spinMainWheel()">GIRAR ROLETA</button>
+      <div class="console-log" id="game-log"></div>
+    </div>
+
+    <!-- PAINEL DIREITO -->
+    <div class="panel interactive-panel" style="align-items: stretch;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; color:var(--accent); font-size:0.95rem;">Time Ativo (<span id="team-count">0</span>/4)</h3>
+        <span style="font-size:0.7rem; color:#aaa;">Equipe liberada para trocas e itens</span>
+      </div>
+      <div class="team-grid" id="team-view"></div>
+
+      <div class="box-section">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <b style="color:var(--gold); font-size:0.78rem;">🎒 INVENTÁRIO (<span id="inv-slots">0</span>/5)</b>
+          <span style="font-size:0.68rem; color:#aaa;">6º item força descarte</span>
+        </div>
+        <div class="inv-grid" id="inventory-view"></div>
+      </div>
+
+      <div class="box-section">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <b style="color:var(--accent); font-size:0.78rem;">DIGIVICE STORAGE</b>
+          <span style="font-size:0.68rem;" id="storage-count">0 Digimons</span>
+        </div>
+        <div class="storage-grid" id="storage-view"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUB-ROLETA MODAL -->
+  <div class="subwheel-modal" id="modal">
+    <div class="subwheel-content">
+      <h3 id="modal-title" style="margin:0 0 4px 0; color:var(--gold); font-size:1rem;">SUB-ROLETA</h3>
+      <p id="modal-desc" style="font-size:0.75rem; margin:0 0 6px 0;"></p>
+      <canvas id="modal-wheel" width="260" height="260"></canvas>
+      <button class="btn-spin" id="modal-spin-btn" onclick="spinModalWheel()">GIRAR</button>
+      
+      <div class="decision-area" id="decision-area">
+        <div id="decision-result-text" style="font-weight:bold; color:var(--gold); font-size:0.85rem; margin-bottom:4px;"></div>
+        <button class="btn-decision-accept" onclick="confirmModalResult()">✅ Aceitar Resultado</button>
+        <button class="btn-decision-laele" id="decision-laele-btn" style="display:none;" onclick="triggerLaEle()">🪞 Usar Item "Lá Ele!" (Girar Novamente)</button>
+        <button class="btn-decision-ad-spin" id="decision-ad-spin-btn" style="display:none;" onclick="triggerAdLaEle()">📺 Assistir Anúncio para Girar Novamente (Grátis)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE SEGUNDA CHANCE (GAME OVER) -->
+  <div class="info-modal" id="revive-modal">
+    <div class="info-content" style="text-align:center;">
+      <h2 style="color:var(--danger); margin:0 0 6px 0;">💀 DERROTA CRÍTICA!</h2>
+      <p style="font-size:0.85rem; color:#eee;">Seus disquetes esgotaram e seus dados estão prestes a ser apagados!</p>
+      
+      <div style="background:rgba(255,183,3,0.1); border:1px dashed var(--gold); border-radius:8px; padding:12px; margin:12px 0;">
+        <b style="color:var(--gold); font-size:0.95rem;">SEGUNDA CHANCE DISPONÍVEL!</b>
+        <p style="font-size:0.8rem; margin:6px 0;">Assista a um breve anúncio em vídeo para receber <b>+1 Disquete de Emergência 💾</b> e continuar agora!</p>
+        <button class="btn-spin" style="width:100%; background:var(--green); color:#000;" onclick="AdManager.requestReviveAd()">📺 ASSISTIR ANÚNCIO & REVIVER</button>
+      </div>
+
+      <button style="background:transparent; border:none; color:#888; font-size:0.75rem; text-decoration:underline; cursor:pointer;" onclick="cancelReviveGameOver()">Aceitar derrota e reiniciar a temporada</button>
+    </div>
+  </div>
+
+  <!-- MODAL DO DIGIMON PERDIDO -->
+  <div class="info-modal" id="lost-digimon-modal">
+    <div class="info-content" style="text-align:center;">
+      <h3 style="color:var(--accent); margin-top:0;">🐾 DIGIMON PERDIDO ENCONTRADO!</h3>
+      <p id="lost-digi-desc" style="font-size:0.85rem;"></p>
+      <div style="display:flex; flex-direction:column; gap:8px; width:100%; margin-top:10px;">
+        <button class="btn-decision-accept" id="lost-pay-disk-btn" onclick="acceptLostDigiWithDisk()">💾 Entregar 1 Disquete para Salvar</button>
+        <button class="btn-decision-ad-spin" onclick="acceptLostDigiWithAd()">📺 Assistir Anúncio para Tratar e Resgatar (Sem Disquete)</button>
+        <button style="background:transparent; border:none; color:#888; font-size:0.75rem; text-decoration:underline; cursor:pointer; margin-top:4px;" onclick="declineLostDigi()">Ignorar e deixá-lo partir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VIP / REMOVER ANÚNCIOS -->
+  <div class="info-modal" id="vip-modal">
+    <div class="info-content">
+      <h3 style="color:var(--gold); margin-top:0; text-align:center;">⭐ PASSE VIP: SEM ANÚNCIOS</h3>
+      <p style="font-size:0.8rem; color:#ccc; text-align:center;">Livre-se de todas as esperas! Ganhe todas as recompensas de anúncios (Reviver, Lá Ele e Resgate) <b>instantaneamente com 1 clique</b>.</p>
+
+      <div class="vip-card">
+        <div>Pagamento em Reais (Brasil)</div>
+        <div class="vip-price">R$ 49,90 <span style="font-size:0.75rem; color:#aaa;">(Pix / Cartão)</span></div>
+        <button class="nav-btn" style="background:var(--green); color:#000; width:100%;" onclick="openPaymentLink('BR')">Pagar via Mercado Pago / Pix</button>
+      </div>
+
+      <div class="vip-card">
+        <div>International Payment (USD)</div>
+        <div class="vip-price">US$ 10.00 <span style="font-size:0.75rem; color:#aaa;">(PayPal / Stripe)</span></div>
+        <button class="nav-btn" style="background:#0077b6; color:#fff; width:100%;" onclick="openPaymentLink('INT')">Pay via Stripe / PayPal</button>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label style="font-size:0.75rem; color:var(--accent);">Já comprou? Digite sua Chave de Ativação:</label>
+        <div style="display:flex; gap:6px; margin-top:4px;">
+          <input type="text" id="vip-key-input" placeholder="Ex: VIP-DIGI-2026" style="flex:1; background:#040812; color:#fff; border:1px solid #234175; padding:6px; border-radius:4px; font-family:monospace;">
+          <button class="nav-btn" style="background:var(--gold); color:#000;" onclick="activateVipKey()">Ativar</button>
+        </div>
+      </div>
+
+      <button class="btn-spin" style="margin-top:14px; width:100%;" onclick="closeVipModal()">FECHAR</button>
+    </div>
+  </div>
+
+  <!-- SIMULAÇÃO VISUAL DE ANÚNCIO -->
+  <div class="ad-modal" id="ad-player-modal">
+    <div class="ad-content">
+      <div style="font-size:0.75rem; color:var(--accent); letter-spacing:1px; font-weight:bold;">PATROCINADOR // DIGIMON NETWORK</div>
+      <div class="ad-video-mock">
+        <div style="font-size:1.6rem; margin-bottom:4px;">📺</div>
+        <div id="ad-timer-text" style="font-size:0.85rem; font-weight:bold;">Anúncio em reprodução: 5s</div>
+        <div class="ad-progress"><div class="ad-progress-bar" id="ad-bar"></div></div>
+      </div>
+      <small style="color:#aaa; font-size:0.7rem;">Sua recompensa será entregue assim que o anúncio terminar.</small>
+    </div>
+  </div>
+
+  <!-- MODAL DE SINCRONIZAÇÃO -->
+  <div class="info-modal" id="sync-modal">
+    <div class="info-content">
+      <h3 style="color:var(--accent); margin-top:0;">📲 Sincronizar / Salvar Progresso</h3>
+      <p style="font-size:0.78rem; color:#ccc;">Alterne entre celular e PC copiando o código de save:</p>
+      
+      <b style="font-size:0.8rem; color:var(--gold);">Seu Código Atual:</b>
+      <textarea class="save-box" id="export-save-text" readonly></textarea>
+      <button class="nav-btn" style="width:100%; margin-bottom:12px; background:var(--green); color:#000;" onclick="copySaveCode()">📋 Copiar Código</button>
+
+      <b style="font-size:0.8rem; color:var(--accent);">Carregar Outro Save:</b>
+      <textarea class="save-box" id="import-save-text" placeholder="Cole aqui seu código copiado do outro dispositivo..."></textarea>
+      <button class="nav-btn" style="width:100%; background:var(--purple); color:#fff;" onclick="importSaveCode()">📥 Carregar Progresso</button>
+
+      <button class="btn-spin" style="margin-top:12px; width:100%;" onclick="closeSyncModal()">FECHAR</button>
+    </div>
+  </div>
+
+<script>
+  /* =========================================================================
+     SEGURANÇA BÁSICA CONTRA ENGENHARIA REVERSA (ANTI-INSPECT / F12)
+     ========================================================================= */
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.onkeydown = function(e) {
+    if (e.keyCode == 123) return false;
+    if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) return false;
+    if (e.ctrlKey && e.keyCode == 85) return false;
+  };
+
+  let isVipUser = JSON.parse(localStorage.getItem('digi_is_vip') || 'false');
+
+  /* =========================================================================
+     🔥🔥🔥 [1. INÍCIO DA ÁREA DE CONFIGURAÇÃO: REDE DE ANÚNCIOS] 🔥🔥🔥
+     =========================================================================
+     INSTRUÇÕES:
+     1. Enquanto estiver testando no seu computador: Deixe TEST_MODE: true.
+     2. Quando for publicar na internet com Monetag ou Google:
+        - Mude TEST_MODE para false;
+        - Adicione a chamada do seu anúncio dentro do 'else' abaixo.
+     ========================================================================= */
+  const AdManager = {
+    TEST_MODE: true, // <-- Mude para 'false' quando for colocar anúncios reais!
+
+    showRewardedAd: function(rewardReason, onSuccess, onFail) {
+      if (isVipUser) {
+        log(`⭐ <b>PASSE VIP:</b> Anúncio ignorado e recompensa concedida instantaneamente!`);
+        if (onSuccess) onSuccess();
+        return;
+      }
+
+      log(`📺 <b>Carregando anúncio patrocinado...</b>`);
+
+      if (this.TEST_MODE) {
+        // MODO TESTE (Simulação visual de 5 segundos)
+        const modal = document.getElementById("ad-player-modal");
+        const timerText = document.getElementById("ad-timer-text");
+        const bar = document.getElementById("ad-bar");
+        modal.style.display = "flex";
+
+        let secondsLeft = 5;
+        bar.style.width = "0%";
+        timerText.innerText = `Anúncio em reprodução: ${secondsLeft}s`;
+
+        const interval = setInterval(() => {
+          secondsLeft--;
+          const percent = ((5 - secondsLeft) / 5) * 100;
+          bar.style.width = `${percent}%`;
+
+          if (secondsLeft > 0) {
+            timerText.innerText = `Anúncio em reprodução: ${secondsLeft}s`;
+          } else {
+            clearInterval(interval);
+            modal.style.display = "none";
+            log(`✨ <b>Anúncio concluído!</b> Recompensa liberada com sucesso.`);
+            if (onSuccess) onSuccess();
+          }
+        }, 1000);
+      } else {
+        /* COLE AQUI O CÓDIGO DA SUA REDE DE ANÚNCIOS REAL (Monetag, Google, etc.) */
+        // Exemplo:
+        // MonetagSDK.showReward({ onReward: () => onSuccess(), onDismiss: () => onFail() });
+      }
+    },
+
+    requestReviveAd: function() {
+      document.getElementById("revive-modal").style.display = "none";
+      this.showRewardedAd("revive_game_over", () => {
+        inventory.push({ id: Date.now(), type: 'disk', name: '💾 Disquete', desc: 'Evita morte ao ser derrotado' });
+        log(`💾 <b>SEGUNDA CHANCE!</b> +1 Disquete de Emergência adicionado.`);
+        updateHUD();
+        renderAllViews();
+        autoSave();
+
+        if (pendingBattleEnemy) {
+          openCombatWheel(pendingBattleEnemy, pendingBattleOnDone);
+        }
+      }, () => {
+        cancelReviveGameOver();
+      });
+    }
+  };
+  /* =========================================================================
+     🔥🔥🔥 [1. FIM DA ÁREA DE CONFIGURAÇÃO: REDE DE ANÚNCIOS] 🔥🔥🔥
+     ========================================================================= */
+
+
+  function openVipModal() { document.getElementById("vip-modal").style.display = "flex"; }
+  function closeVipModal() { document.getElementById("vip-modal").style.display = "none"; }
+
+
+  /* =========================================================================
+     🔥🔥🔥 [2. INÍCIO DA ÁREA DE CONFIGURAÇÃO: LINKS DE PAGAMENTO] 🔥🔥🔥
+     =========================================================================
+     INSTRUÇÕES:
+     Substitua os links dentro das aspas pelos links de pagamento reais que você
+     gerou na sua conta do Mercado Pago e da Stripe (ou PayPal).
+     ========================================================================= */
+  function openPaymentLink(type) {
+    if (type === 'BR') {
+      // Cole aqui o seu Link de Pagamento do Mercado Pago (R$ 49,90)
+      window.open("https://link.mercadopago.com.br/SEU_LINK_AQUI", "_blank");
+    } else {
+      // Cole aqui o seu Link do Stripe ou PayPal em Dólar (US$ 10.00)
+      window.open("https://buy.stripe.com/SEU_LINK_STRIPE_AQUI", "_blank");
+    }
+  }
+  /* =========================================================================
+     🔥🔥🔥 [2. FIM DA ÁREA DE CONFIGURAÇÃO: LINKS DE PAGAMENTO] 🔥🔥🔥
+     ========================================================================= */
+
+
+  /* =========================================================================
+     🔥🔥🔥 [3. INÍCIO DA ÁREA DE CONFIGURAÇÃO: SENHA / CHAVE VIP] 🔥🔥🔥
+     =========================================================================
+     INSTRUÇÕES:
+     Altere as senhas abaixo para a palavra secreta que você preferir. 
+     É essa senha que você enviará para o comprador ativar o VIP no jogo!
+     ========================================================================= */
+  function activateVipKey() {
+    const key = document.getElementById("vip-key-input").value.trim().toUpperCase();
+
+    // Defina abaixo quais senhas desbloqueiam o passe VIP:
+    if (key === "DIGIVIP2026" || key === "VIP-DIGI-2026" || key === "MINHA_SENHA_SECRETA") {
+      isVipUser = true;
+      localStorage.setItem('digi_is_vip', 'true');
+      alert("⭐ PASSE VIP ATIVADO COM SUCESSO! Todos os anúncios foram removidos e as recompensas agora são imediatas.");
+      document.getElementById("vip-status-container").style.display = "inline-block";
+      closeVipModal();
+      autoSave();
+    } else {
+      alert("Chave inválida. Verifique a confirmação do seu pagamento!");
+    }
+  }
+  /* =========================================================================
+     🔥🔥🔥 [3. FIM DA ÁREA DE CONFIGURAÇÃO: SENHA / CHAVE VIP] 🔥🔥🔥
+     ========================================================================= */
+
+
+  // BANCO DE DADOS
+  const SEASONS = [
+    {
+      name: "Season 1 (Adventure)",
+      starters: [
+        { name: "Agumon", stage: "Rookie", pwr: 25, img: "agumon", next: "Greymon" },
+        { name: "Gabumon", stage: "Rookie", pwr: 25, img: "gabumon", next: "Garurumon" },
+        { name: "Patamon", stage: "Rookie", pwr: 25, img: "patamon", next: "Angemon" },
+        { name: "Palmon", stage: "Rookie", pwr: 25, img: "palmon", next: "Togemon" },
+        { name: "Tentomon", stage: "Rookie", pwr: 25, img: "tentomon", next: "Kabuterimon" },
+        { name: "Gomamon", stage: "Rookie", pwr: 25, img: "gomamon", next: "Ikkakumon" },
+        { name: "Biyomon", stage: "Rookie", pwr: 25, img: "biyomon", next: "Birdramon" },
+        { name: "Gatomon", stage: "Champion", pwr: 35, img: "gatomon", next: "Angewomon" }
+      ],
+      recruits: [
+        { name: "Leomon", stage: "Champion", pwr: 40, img: "leomon" },
+        { name: "Wizardmon", stage: "Champion", pwr: 35, img: "wizardmon" },
+        { name: "Andromon", stage: "Ultimate", pwr: 55, img: "andromon" },
+        { name: "Monzaemon", stage: "Ultimate", pwr: 50, img: "monzaemon" },
+        { name: "Meramon", stage: "Champion", pwr: 35, img: "meramon" },
+        { name: "Centarumon", stage: "Champion", pwr: 35, img: "centarumon" },
+        { name: "Unimon", stage: "Champion", pwr: 38, img: "unimon" },
+        { name: "Whamon", stage: "Ultimate", pwr: 55, img: "whamon" },
+        { name: "Elecmon", stage: "Rookie", pwr: 20, img: "elecmon" },
+        { name: "Piximon", stage: "Ultimate", pwr: 52, img: "piximon" },
+        { name: "Ogremon", stage: "Champion", pwr: 38, img: "ogremon" },
+        { name: "Frigimon", stage: "Champion", pwr: 36, img: "frigimon" }
+      ],
+      finals: [
+        { name: "WarGreymon", stage: "Mega", pwr: 110, img: "wargreymon" },
+        { name: "MetalGarurumon", stage: "Mega", pwr: 105, img: "metalgarurumon" },
+        { name: "Seraphimon", stage: "Mega", pwr: 115, img: "seraphimon" },
+        { name: "Magnadramon", stage: "Mega", pwr: 110, img: "magnadramon" },
+        { name: "HerculesKabuterimon", stage: "Mega", pwr: 105, img: "herculeskabuterimon" }
+      ],
+      bosses: [
+        { name: "Devimon", basePwr: 70, img: "devimon" },
+        { name: "Etemon", basePwr: 130, img: "etemon" },
+        { name: "Myotismon", basePwr: 220, img: "myotismon" },
+        { name: "Piedmon", basePwr: 340, img: "piedmon" },
+        { name: "Apocalymon", basePwr: 480, img: "apocalymon" }
+      ]
+    },
+    {
+      name: "Season 2 (02)",
+      starters: [
+        { name: "Veemon", stage: "Rookie", pwr: 25, img: "veemon", next: "Exveemon" },
+        { name: "Hawkmon", stage: "Rookie", pwr: 25, img: "hawkmon", next: "Aquilamon" },
+        { name: "Armadillomon", stage: "Rookie", pwr: 25, img: "armadillomon", next: "Ankylomon" },
+        { name: "Wormmon", stage: "Rookie", pwr: 25, img: "wormmon", next: "Stingmon" }
+      ],
+      recruits: [
+        { name: "Flamedramon", stage: "Armor", pwr: 45, img: "flamedramon" },
+        { name: "Raidramon", stage: "Armor", pwr: 45, img: "raidramon" },
+        { name: "Holsmon", stage: "Armor", pwr: 42, img: "holsmon" },
+        { name: "Knightmon", stage: "Ultimate", pwr: 60, img: "knightmon" }
+      ],
+      finals: [
+        { name: "Imperialdramon", stage: "Mega", pwr: 125, img: "imperialdramon" },
+        { name: "Imperialdramon Fighter", stage: "Mega", pwr: 145, img: "imperialdramonfighter" },
+        { name: "GranKuwagamon", stage: "Mega", pwr: 115, img: "grankuwagamon" }
+      ],
+      bosses: [
+        { name: "Kimeramon", basePwr: 110, img: "kimeramon" },
+        { name: "BlackWarGreymon", basePwr: 240, img: "blackwargreymon" },
+        { name: "Daemon", basePwr: 360, img: "daemon" },
+        { name: "MaloMyotismon", basePwr: 520, img: "malomyotismon" }
+      ]
+    },
+    {
+      name: "Season 3 (Tamers)",
+      starters: [
+        { name: "Guilmon", stage: "Rookie", pwr: 25, img: "guilmon", next: "Growlmon" },
+        { name: "Terriermon", stage: "Rookie", pwr: 25, img: "terriermon", next: "Gargomon" },
+        { name: "Renamon", stage: "Rookie", pwr: 25, img: "renamon", next: "Kyubimon" }
+      ],
+      recruits: [
+        { name: "Cyberdramon", stage: "Ultimate", pwr: 60, img: "cyberdramon" },
+        { name: "Antylamon", stage: "Ultimate", pwr: 65, img: "antylamon" }
+      ],
+      finals: [
+        { name: "Gallantmon", stage: "Mega", pwr: 120, img: "gallantmon" },
+        { name: "MegaGargomon", stage: "Mega", pwr: 110, img: "megagargomon" },
+        { name: "Sakuyamon", stage: "Mega", pwr: 115, img: "sakuyamon" }
+      ],
+      bosses: [
+        { name: "Mihiramon", basePwr: 130, img: "mihiramon" },
+        { name: "Vikaralamon", basePwr: 260, img: "vikaralamon" },
+        { name: "D-Reaper", basePwr: 580, img: "megidramon" }
+      ]
+    },
+    {
+      name: "Season 4 (Frontier)",
+      starters: [
+        { name: "Agunimon", stage: "H-Hybrid", pwr: 30, img: "agunimon", next: "BurningGreymon" },
+        { name: "Lobomon", stage: "H-Hybrid", pwr: 30, img: "lobomon", next: "KendoGarurumon" }
+      ],
+      recruits: [
+        { name: "Loweemon", stage: "H-Hybrid", pwr: 40, img: "loweemon" },
+        { name: "Grumblemon", stage: "H-Hybrid", pwr: 35, img: "grumblemon" }
+      ],
+      finals: [
+        { name: "EmperorGreymon", stage: "Mega", pwr: 135, img: "emperorgreymon" },
+        { name: "Susanoomon", stage: "Mega", pwr: 165, img: "susanoomon" }
+      ],
+      bosses: [
+        { name: "Duskmon", basePwr: 150, img: "duskmon" },
+        { name: "Cherubimon", basePwr: 300, img: "cherubimon" },
+        { name: "Lucemon", basePwr: 650, img: "lucemon" }
+      ]
+    }
+  ];
+
+  const EVOLUTIONS_CHAIN = {
+    "Greymon": { name: "MetalGreymon", stage: "Ultimate", pwr: 70, img: "metalgreymon", next: "WarGreymon" },
+    "MetalGreymon": { name: "WarGreymon", stage: "Mega", pwr: 110, img: "wargreymon" },
+    "Garurumon": { name: "WereGarurumon", stage: "Ultimate", pwr: 68, img: "weregarurumon", next: "MetalGarurumon" },
+    "WereGarurumon": { name: "MetalGarurumon", stage: "Mega", pwr: 105, img: "metalgarurumon" },
+    "Angemon": { name: "MagnaAngemon", stage: "Ultimate", pwr: 72, img: "magnaangemon", next: "Seraphimon" },
+    "MagnaAngemon": { name: "Seraphimon", stage: "Mega", pwr: 115, img: "seraphimon" },
+    "Togemon": { name: "Lillymon", stage: "Ultimate", pwr: 65, img: "lillymon", next: "Rosemon" },
+    "Lillymon": { name: "Rosemon", stage: "Mega", pwr: 100, img: "rosemon" },
+    "Exveemon": { name: "Paildramon", stage: "Ultimate", pwr: 75, img: "paildramon", next: "Imperialdramon" },
+    "Paildramon": { name: "Imperialdramon", stage: "Mega", pwr: 125, img: "imperialdramon" },
+    "Growlmon": { name: "WarGrowlmon", stage: "Ultimate", pwr: 75, img: "wargrowlmon", next: "Gallantmon" },
+    "WarGrowlmon": { name: "Gallantmon", stage: "Mega", pwr: 120, img: "gallantmon" },
+    "BurningGreymon": { name: "Aldamon", stage: "Ultimate", pwr: 80, img: "aldamon", next: "EmperorGreymon" },
+    "Aldamon": { name: "EmperorGreymon", stage: "Mega", pwr: 135, img: "emperorgreymon" }
+  };
+
+  const EVO_RATES = [25, 40, 55, 70, 85, 100];
+
+  let unlockedSeasons = JSON.parse(localStorage.getItem('digi_unlocked_seasons') || '[0]');
+  let runStats = JSON.parse(localStorage.getItem('digi_stats') || '{"attempts": 1, "bossesDefeated": 0, "seasonsCleared": 0, "deaths": 0}');
+
+  let currentSeasonIdx = 0;
+  let currentBossIdx = 0;
+  let team = [];
+  let storage = [];
+  let inventory = [];
+  let turnsToBoss = 5;
+  let evoStep = 0;
+  let isStarterPhase = true;
+  let isMainSpinning = false;
+  let mainAngle = 0;
+  let mainSectors = [];
+
+  let motivationActive = false;
+  let rngGoddessActive = false;
+
+  let pendingBattleEnemy = null;
+  let pendingBattleOnDone = null;
+  let currentLostDigi = null;
+  let onLostDigiDone = null;
+
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const modalCanvas = document.getElementById("modal-wheel");
+  const mctx = modalCanvas.getContext("2d");
+  let modalAngle = 0;
+  let modalSectors = [];
+  let isModalSpinning = false;
+  let onModalResolve = null;
+  let currentModalResult = null;
+
+  function log(msg) {
+    const box = document.getElementById("game-log");
+    box.innerHTML = `> ${msg}<br>` + box.innerHTML;
+  }
+
+  function getImgUrl(name) {
+    const clean = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `https://digimon.shadowsmith.com/img/${clean}.jpg`;
+  }
+
+  function autoSave() {
+    const saveState = {
+      unlockedSeasons, runStats, currentSeasonIdx, currentBossIdx,
+      team, storage, inventory, turnsToBoss, evoStep, isStarterPhase, motivationActive, rngGoddessActive
+    };
+    localStorage.setItem('digi_current_game_state', JSON.stringify(saveState));
+  }
+
+  function loadAutoSave() {
+    const raw = localStorage.getItem('digi_current_game_state');
+    if (!raw) return false;
+    try {
+      const s = JSON.parse(raw);
+      unlockedSeasons = s.unlockedSeasons || [0];
+      runStats = s.runStats || { attempts: 1, bossesDefeated: 0, seasonsCleared: 0, deaths: 0 };
+      currentSeasonIdx = s.currentSeasonIdx || 0;
+      currentBossIdx = s.currentBossIdx || 0;
+      team = s.team || [];
+      storage = s.storage || [];
+      inventory = s.inventory || [];
+      turnsToBoss = s.turnsToBoss || 5;
+      evoStep = s.evoStep || 0;
+      isStarterPhase = s.isStarterPhase !== undefined ? s.isStarterPhase : true;
+      motivationActive = s.motivationActive || false;
+      rngGoddessActive = s.rngGoddessActive || false;
+      return true;
+    } catch(e) { return false; }
+  }
+
+  function resetCurrentRun() {
+    if (!confirm("Tem certeza que deseja reiniciar sua jornada atual? Você voltará para o sorteio de Inicial da temporada.")) return;
+    runStats.attempts++;
+    localStorage.setItem('digi_stats', JSON.stringify(runStats));
+    switchSeason(currentSeasonIdx);
+  }
+
+  function getScaledEnemyPower(type, basePower = 50) {
+    const playerTotalPower = team.reduce((a, b) => a + b.pwr, 0);
+    const seasonFactor = currentSeasonIdx * 0.25;
+
+    if (type === 'wild') {
+      const dynamicPwr = Math.floor(playerTotalPower * (0.45 + Math.random() * 0.25));
+      return Math.max(basePower, dynamicPwr);
+    }
+    else if (type === 'tamer') {
+      const dynamicPwr = Math.floor(playerTotalPower * (0.75 + Math.random() * 0.20));
+      return Math.max(basePower * 1.5, dynamicPwr);
+    }
+    else if (type === 'boss') {
+      const dynamicBossPwr = Math.floor(playerTotalPower * (0.90 + (currentBossIdx * 0.12) + seasonFactor));
+      return Math.max(basePower, dynamicBossPwr);
+    }
+    return basePower;
+  }
+
+  function updateHUD() {
+    const s = SEASONS[currentSeasonIdx];
+    const left = s.bosses.length - currentBossIdx;
+    document.getElementById("bosses-left").innerText = `${left} chefes`;
+    document.getElementById("boss-timer").innerText = `${turnsToBoss} giros`;
+    document.getElementById("inv-count-hud").innerText = `${inventory.length}/5`;
+    document.getElementById("inv-slots").innerText = inventory.length;
+    document.getElementById("evo-rate").innerText = `${EVO_RATES[evoStep]}%`;
+
+    let tot = team.reduce((a, b) => a + b.pwr, 0);
+    if (motivationActive) tot += 35;
+    document.getElementById("team-power").innerText = `${tot} DP`;
+
+    document.getElementById("motivate-tag").style.display = motivationActive ? "inline" : "none";
+    document.getElementById("rng-tag").style.display = rngGoddessActive ? "inline" : "none";
+    document.getElementById("team-count").innerText = team.length;
+    document.getElementById("storage-count").innerText = `${storage.length} Digimons`;
+    document.getElementById("vip-status-container").style.display = isVipUser ? "inline-block" : "none";
+  }
+
+  function renderSeasonButtons() {
+    const container = document.getElementById("seasons-container");
+    container.innerHTML = "";
+    SEASONS.forEach((s, idx) => {
+      const isUnlocked = unlockedSeasons.includes(idx);
+      const btn = document.createElement("button");
+      btn.className = `season-btn ${idx === currentSeasonIdx ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`;
+      btn.innerHTML = `${!isUnlocked ? '🔒 ' : ''}${s.name}`;
+      btn.onclick = () => {
+        if (!isUnlocked) return alert(`Essa temporada está bloqueada! Zere a temporada anterior para desbloqueá-la.`);
+        switchSeason(idx);
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function spinUnlockedSeason() {
+    if (unlockedSeasons.length === 1) return alert("Apenas a Season 1 está desbloqueada! Zere-a para liberar mais temporadas.");
+    const sec = unlockedSeasons.map(idx => ({ label: SEASONS[idx].name, color: ['#00b4d8','#ffb703','#9b5de5','#f72585'][idx % 4], data: idx }));
+    openModal("ROLETA DE TEMPORADAS DESBLOQUEADAS", "Gire para sortear qual temporada jogar!", sec, (res) => switchSeason(res.data));
+  }
+
+  function create4QuadrantSectors(baseSuccessRate, winLabel, loseLabel, winColor = "#2ecc71", loseColor = "#e74c3c") {
+    let successRate = baseSuccessRate;
+    if (rngGoddessActive) {
+      successRate += 0.30;
+      log(`🕊️ <b>DEUSA DO RNG ATIVADA!</b> +30% de chance aplicado à roleta!`);
+      rngGoddessActive = false;
+      updateHUD();
+    }
+    const sRate = Math.max(0.01, Math.min(0.99, successRate));
+    const winShare = sRate / 4;
+    const loseShare = (1 - sRate) / 4;
+    const sectors = [];
+    for (let q = 0; q < 4; q++) {
+      sectors.push({ label: winLabel, percent: winShare, color: winColor, isWin: true });
+      sectors.push({ label: loseLabel, percent: loseShare, color: loseColor, isWin: false });
+    }
+    return sectors;
+  }
+
+  function drawGenericWheel(c, context, sectors, ang) {
+    const w = c.width, h = c.height;
+    const cx = w / 2, cy = h / 2, radius = cx - 14;
+    context.clearRect(0, 0, w, h);
+
+    context.save();
+    context.translate(cx, cy);
+    context.rotate(ang);
+
+    let start = 0;
+    for (let i = 0; i < sectors.length; i++) {
+      const sec = sectors[i];
+      const sliceArc = (sec.percent ? sec.percent : (1 / sectors.length)) * Math.PI * 2;
+      const end = start + sliceArc;
+
+      context.beginPath();
+      context.fillStyle = sec.color;
+      context.moveTo(0, 0);
+      context.arc(0, 0, radius, start, end);
+      context.fill();
+      context.lineWidth = 1;
+      context.strokeStyle = "#070c18";
+      context.stroke();
+
+      context.save();
+      context.rotate(start + sliceArc / 2);
+      context.fillStyle = sec.textColor || "#fff";
+      context.font = "bold 11px sans-serif";
+      context.textAlign = "right";
+      context.fillText(sec.label, radius - 8, 4);
+      context.restore();
+
+      start = end;
+    }
+    context.restore();
+
+    context.fillStyle = "#ffb703";
+    context.beginPath(); context.arc(cx, cy, 12, 0, Math.PI * 2); context.fill();
+    context.stroke();
+
+    context.fillStyle = "#ffb703";
+    context.strokeStyle = "#000";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(cx, 26);
+    context.lineTo(cx - 11, 4);
+    context.lineTo(cx + 11, 4);
+    context.closePath();
+    context.fill();
+    context.stroke();
+  }
+
+  function drawMainWheel() { drawGenericWheel(canvas, ctx, mainSectors, mainAngle); }
+  function drawModalWheel() { drawGenericWheel(modalCanvas, mctx, modalSectors, modalAngle); }
+
+  function switchSeason(idx) {
+    currentSeasonIdx = idx;
+    currentBossIdx = 0;
+    team = [];
+    storage = [];
+    inventory = [{ id: Date.now(), type: 'disk', name: '💾 Disquete', desc: 'Evita morte ao ser derrotado' }];
+    turnsToBoss = 5;
+    evoStep = 0;
+    isStarterPhase = true;
+    motivationActive = false;
+    rngGoddessActive = false;
+
+    renderSeasonButtons();
+    setupStarterWheel();
+    updateHUD();
+    renderAllViews();
+    autoSave();
+    log(`Temporada carregada: <b>${SEASONS[idx].name}</b>. Gire para sortear seu Inicial único!`);
+  }
+
+  function setupStarterWheel() {
+    const s = SEASONS[currentSeasonIdx];
+    mainSectors = s.starters.map((d, i) => ({
+      label: d.name,
+      color: ['#00b4d8','#0077b6','#90e0ef','#03045e','#48cae4','#5e60ce','#ff9f1c','#e63946'][i % 8],
+      data: d
+    }));
+    document.getElementById("wheel-title").innerText = "ROLETA DO INICIAL (TEMPORADA)";
+    drawMainWheel();
+  }
+
+  function setupAdventureWheel() {
+    mainSectors = [
+      { label: "Batalha Selvagem", color: "#e63946", action: "wild_battle" },
+      { label: "Treinador Maligno", color: "#d90429", action: "evil_tamer" },
+      { label: "Recrutar Aliado", color: "#3a86ff", action: "recruit" },
+      { label: "🎁 Suprimentos", color: "#ffb703", textColor: "#000", action: "item_chest" },
+      { label: "🤦 Péssimo Treinador", color: "#8b0000", action: "bad_tamer" },
+      { label: "🎒 Distraído", color: "#6c757d", action: "distracted" },
+      { label: "🐾 Digimon Perdido", color: "#2a9d8f", action: "lost_digimon" },
+      { label: "Evento Duplo!", color: "#7209b7", action: "double_event" },
+      { label: "✨ FORMA FINAL", color: "#f72585", action: "final_form" }
+    ];
+    document.getElementById("wheel-title").innerText = "ROLETA DA AVENTURA DIGITAL";
+    drawMainWheel();
+  }
+
+  function spinMainWheel() {
+    if (isMainSpinning) return;
+    isMainSpinning = true;
+    document.getElementById("spin-btn").disabled = true;
+
+    const turns = 4 + Math.random() * 4;
+    const target = mainAngle + turns * Math.PI * 2 + Math.random() * Math.PI * 2;
+    const duration = 2400;
+    const start = performance.now();
+    const init = mainAngle;
+
+    function anim(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      mainAngle = init + (target - init) * ease;
+      drawMainWheel();
+
+      if (progress < 1) {
+        requestAnimationFrame(anim);
+      } else {
+        isMainSpinning = false;
+        document.getElementById("spin-btn").disabled = false;
+        resolveMainWheel();
+      }
+    }
+    requestAnimationFrame(anim);
+  }
+
+  function getSelectedSector(sectors, ang) {
+    let norm = ((3 * Math.PI / 2 - (ang % (Math.PI * 2))) + Math.PI * 2) % (Math.PI * 2);
+    let accum = 0;
+    for (let i = 0; i < sectors.length; i++) {
+      const arc = (sectors[i].percent ? sectors[i].percent : (1 / sectors.length)) * Math.PI * 2;
+      if (norm >= accum && norm < accum + arc) return sectors[i];
+      accum += arc;
+    }
+    return sectors[0];
+  }
+
+  function resolveMainWheel() {
+    const sel = getSelectedSector(mainSectors, mainAngle);
+
+    if (isStarterPhase) {
+      const initial = { ...sel.data, isFused: false };
+      team.push(initial);
+      log(`Você escolheu <b>${initial.name}</b> como seu parceiro inicial!`);
+      isStarterPhase = false;
+      setupAdventureWheel();
+      updateHUD();
+      renderAllViews();
+      autoSave();
+      return;
+    }
+
+    executeAdventureEvent(sel.action, () => {
+      if (sel.action !== "double_event") {
+        turnsToBoss--;
+        updateHUD();
+        autoSave();
+        if (turnsToBoss <= 0) triggerBossEncounter();
+      }
+    });
+  }
+
+  function openItemWheel(onDone) {
+    const itemSectors = [
+      { label: "💾 Disquete (2%)", percent: 0.02, color: "#e74c3c", data: { type: 'disk', name: '💾 Disquete', desc: 'Evita morte ao ser derrotado' } },
+      { label: "🕊️ Deusa RNG (4%)", percent: 0.04, color: "#00f5d4", textColor: "#000", data: { type: 'rng', name: '🕊️ Deusa do RNG', desc: '+30% de chance na próxima roleta' } },
+      { label: "🪞 Lá Ele! (6%)", percent: 0.06, color: "#ff0054", data: { type: 'la_ele', name: '🪞 Lá Ele!', desc: 'Gira novamente caso recuse o resultado' } },
+      { label: "🧬 Brasão Fusão (12%)", percent: 0.12, color: "#9b5de5", data: { type: 'crest', name: '🧬 Brasão Fusão', desc: 'Gira 2 roletas com o time para fundir' } },
+      { label: "⚡ Chip Poder (26%)", percent: 0.26, color: "#3a86ff", data: { type: 'chip', name: '⚡ Chip Poder', desc: '+20 DP para todo o time ativo' } },
+      { label: "🥚 Digitama (25%)", percent: 0.25, color: "#ffbe0b", textColor: "#000", data: { type: 'egg', name: '🥚 Digitama', desc: 'Choque para obter um novo Digimon' } },
+      { label: "🍖 Motivação (25%)", percent: 0.25, color: "#fb8500", textColor: "#000", data: { type: 'motivate', name: '🍖 Motivação', desc: '+35 DP na próxima batalha' } }
+    ];
+
+    openModal("ROLETA DE SUPRIMENTOS / DROPS", "Gire para sortear seu item!", itemSectors, (res) => {
+      obtainItem({ id: Date.now(), ...res.data }, onDone);
+    });
+  }
+
+  function obtainItem(newItem, onDone) {
+    if (inventory.length < 5) {
+      inventory.push(newItem);
+      log(`🎁 <b>Item Adquirido:</b> ${newItem.name}!`);
+      updateHUD();
+      renderAllViews();
+      autoSave();
+      if (onDone) onDone();
+    } else {
+      log(`⚠️ <b>INVENTÁRIO CHEIO (5/5)!</b> A roleta decidirá qual item será descartado para dar lugar a [${newItem.name}]!`);
+      const discardSectors = inventory.map((it, i) => ({
+        label: it.name,
+        color: ['#e74c3c','#e67e22','#f1c40f','#3498db','#9b59b6'][i % 5],
+        itemRef: it
+      }));
+
+      openModal("ROLETA DE DESCARTE OBRIGATÓRIA", `Qual item será excluído para receber <b>${newItem.name}</b>?`, discardSectors, (chosen) => {
+        const idx = inventory.findIndex(x => x.id === chosen.itemRef.id);
+        const discarded = inventory.splice(idx, 1)[0];
+        inventory.push(newItem);
+        log(`🗑️ <b>Item Descartado:</b> [${discarded.name}] foi removido. [${newItem.name}] entrou no inventário!`);
+        updateHUD();
+        renderAllViews();
+        autoSave();
+        if (onDone) onDone();
+      });
+    }
+  }
+
+  function useInventoryItem(itemId) {
+    const idx = inventory.findIndex(i => i.id === itemId);
+    if (idx === -1) return;
+    const item = inventory[idx];
+
+    if (item.type === 'disk') return alert("O Disquete é consumido automaticamente para reviver o time em caso de derrota!");
+    if (item.type === 'la_ele') return alert("O item 'Lá Ele!' é ativado manualmente no painel de decisão da roleta!");
+
+    if (item.type === 'motivate') {
+      inventory.splice(idx, 1);
+      motivationActive = true;
+      log(`🍖 <b>Carne da Motivação Usada!</b> +35 DP bônus preparado para a próxima luta!`);
+      updateHUD();
+      renderAllViews();
+      autoSave();
+    }
+    else if (item.type === 'rng') {
+      inventory.splice(idx, 1);
+      rngGoddessActive = true;
+      log(`🕊️ <b>Deusa do RNG Invocada!</b> +30% de chance de sucesso adicionado à próxima roleta!`);
+      updateHUD();
+      renderAllViews();
+      autoSave();
+    }
+    else if (item.type === 'chip') {
+      inventory.splice(idx, 1);
+      team.forEach(d => d.pwr += 20);
+      log(`⚡ <b>Chip de Poder Usado!</b> +20 DP concedido a todos os parceiros do time.`);
+      updateHUD();
+      renderAllViews();
+      autoSave();
+    }
+    else if (item.type === 'egg') {
+      inventory.splice(idx, 1);
+      updateHUD();
+      renderAllViews();
+      autoSave();
+      log(`🥚 Chocando o Digitama na roleta...`);
+      const s = SEASONS[currentSeasonIdx];
+      const eggSectors = s.recruits.map((d, i) => ({
+        label: d.name,
+        color: ['#ffbe0b','#fb5607','#ff006e','#8338ec','#3a86ff'][i % 5],
+        data: d
+      }));
+      openModal("CHOCANDO DIGI-OVO", "Gire para ver qual Digimon nasceu!", eggSectors, (res) => {
+        addDigimonToPlayer({ ...res.data, isFused: false });
+        log(`🐣 <b>O Digi-Ovo chocou!</b> Nasceu um <b>${res.data.name}</b>!`);
+      });
+    }
+    else if (item.type === 'crest') {
+      if (team.length < 2) return alert("Você precisa de pelo menos 2 Digimons na equipe ativa para realizar uma fusão!");
+      startDualWheelFusion(idx);
+    }
+  }
+
+  function startDualWheelFusion(crestIndex) {
+    const sec1 = team.map((d, i) => ({ label: d.name, color: ['#3a86ff','#ff006e','#8338ec','#06d6a0'][i % 4], data: d }));
+
+    openModal("FUSÃO DNA: 1º DIGIMON", "Gire a 1ª roleta para sortear quem entra na fusão!", sec1, (res1) => {
+      const digi1 = res1.data;
+      log(`🧬 1º participante sorteado: <b>${digi1.name}</b>!`);
+
+      const remainingTeam = team.filter(d => d !== digi1);
+      const sec2 = remainingTeam.map((d, i) => ({ label: d.name, color: ['#fb5607','#ffbe0b','#4cc9f0'][i % 3], data: d }));
+
+      openModal("FUSÃO DNA: 2º DIGIMON", `Gire a 2ª roleta para sortear o parceiro de ${digi1.name}!`, sec2, (res2) => {
+        const digi2 = res2.data;
+        log(`🧬 2º participante sorteado: <b>${digi2.name}</b>!`);
+
+        inventory.splice(crestIndex, 1);
+        updateHUD();
+        renderAllViews();
+
+        const teamCanEvolve = team.some(d => d.next || EVOLUTIONS_CHAIN[d.name]);
+        const fusionSuccessRate = teamCanEvolve ? 0.70 : 0.92;
+        const msgBonus = !teamCanEvolve ? " (TAXA MÁXIMA: Ninguém no time pode mais evoluir!)" : "";
+
+        const fusionQuadrants = create4QuadrantSectors(fusionSuccessRate, "FUSÃO BEM-SUCEDIDA!", "FALHA NA FUSÃO", "#9b5de5", "#333");
+
+        openModal(`TESTE DE SINCRONIA DNA (4 QUADRANTES)${msgBonus}`, `Tentativa de fusão: ${digi1.name} + ${digi2.name}!`, fusionQuadrants, (fRes) => {
+          if (fRes.isWin) {
+            removeSpecificDigi(digi1);
+            removeSpecificDigi(digi2);
+
+            let principal, absorbed;
+            if (digi1.isFused && !digi2.isFused) { principal = digi1; absorbed = digi2; }
+            else if (!digi1.isFused && digi2.isFused) { principal = digi2; absorbed = digi1; }
+            else if (digi1.pwr >= digi2.pwr) { principal = digi1; absorbed = digi2; }
+            else { principal = digi2; absorbed = digi1; }
+
+            let fusedName = `${principal.name} DNA-Burst`;
+            let fusedImg = principal.img;
+
+            const p1 = principal.name.toLowerCase(), p2 = absorbed.name.toLowerCase();
+            if ((p1.includes('grey') || p1.includes('agu')) && (p2.includes('garu') || p2.includes('gabu'))) {
+              fusedName = "Omnimon"; fusedImg = "omnimon";
+            } else if ((p1.includes('exvee') || p1.includes('vee')) && p2.includes('sting')) {
+              fusedName = "Paildramon"; fusedImg = "paildramon";
+            }
+
+            const fusedPwr = Math.round((principal.pwr + absorbed.pwr) * 1.35);
+            const fusedDigi = { name: fusedName, stage: "DNA-Mega", pwr: fusedPwr, img: fusedImg, isFused: true };
+
+            addDigimonToPlayer(fusedDigi);
+            log(`🧬 <b>FUSÃO CONCLUÍDA!</b> ${principal.name} absorveu o DNA de ${absorbed.name} tornando-se <b>${fusedName}</b> (${fusedPwr} DP)!`);
+          } else {
+            log(`❌ A fusão falhou por instabilidade. Os Digimons permaneceram e ganharam +10 DP.`);
+            digi1.pwr += 10;
+            digi2.pwr += 10;
+            updateHUD();
+            renderAllViews();
+          }
+          autoSave();
+        });
+      });
+    });
+  }
+
+  function removeSpecificDigi(digiObj) {
+    let tIdx = team.indexOf(digiObj);
+    if (tIdx !== -1) team.splice(tIdx, 1);
+    else {
+      let sIdx = storage.indexOf(digiObj);
+      if (sIdx !== -1) storage.splice(sIdx, 1);
+    }
+  }
+
+  function executeAdventureEvent(action, onDone) {
+    switch (action) {
+      case "item_chest":
+        openItemWheel(onDone);
+        break;
+
+      case "recruit":
+        openRecruitWheel(onDone);
+        break;
+
+      case "final_form":
+        openFinalFormWheel(onDone);
+        break;
+
+      case "wild_battle": {
+        const s = SEASONS[currentSeasonIdx];
+        const wild = { ...s.recruits[Math.floor(Math.random() * s.recruits.length)] };
+        const scaledPwr = getScaledEnemyPower('wild', wild.pwr);
+        wild.pwr = scaledPwr;
+        log(`🌿 <b>Digimon Selvagem Encontrado:</b> <b>${wild.name}</b> (${scaledPwr} DP)!`);
+        startBattleFlow({ name: wild.name, pwr: scaledPwr, img: wild.img, isBoss: false, isWild: true, digiData: wild }, onDone);
+        break;
+      }
+
+      case "evil_tamer": {
+        const scaledPwr = getScaledEnemyPower('tamer', 80);
+        log(`😈 <b>TREINADOR MALIGNO DESAFIA VOCÊ!</b> Poder: ${scaledPwr} DP!`);
+        startBattleFlow({ name: "Treinador Maligno", pwr: scaledPwr, img: "ogremon", isBoss: false, isTamer: true }, onDone);
+        break;
+      }
+
+      case "bad_tamer": {
+        if (team.length <= 1) {
+          log(`🤦 <b>PÉSSIMO TREINADOR:</b> Você tropeçou e cometeu erros, mas seu único parceiro se recusou a te abandonar!`);
+          if (onDone) onDone();
+          return;
+        }
+        const badSectors = team.map((d, i) => ({
+          label: d.name,
+          color: ['#e74c3c','#c0392b','#d63031','#e17055'][i % 4],
+          data: d
+        }));
+        openModal("🤦 PÉSSIMO TREINADOR!", "Você cometeu erros graves! Gire para ver qual Digimon do time irá fugir!", badSectors, (res) => {
+          const lostDigi = res.data;
+          removeSpecificDigi(lostDigi);
+          log(`💔 <b>DIGIMON PERDIDO:</b> <b>${lostDigi.name}</b> se decepcionou e abandonou a equipe!`);
+          updateHUD();
+          renderAllViews();
+          autoSave();
+          if (onDone) onDone();
+        });
+        break;
+      }
+
+      case "distracted": {
+        if (inventory.length === 0) {
+          log(`🎒 <b>DISTRAÍDO:</b> Você derrubou a mochila no chão, mas estava vazia! Nada foi perdido.`);
+          if (onDone) onDone();
+          return;
+        }
+        const distSectors = inventory.map((it, i) => ({
+          label: it.name,
+          color: ['#636e72','#b2bec3','#2d3436','#74b9ff'][i % 4],
+          itemRef: it
+        }));
+        openModal("🎒 VOCÊ FOI DISTRAÍDO!", "Sua mochila abriu! Gire para ver qual item caiu no abismo digital!", distSectors, (res) => {
+          const idx = inventory.findIndex(x => x.id === res.itemRef.id);
+          const dropped = inventory.splice(idx, 1)[0];
+          log(`💨 <b>ITEM PERDIDO:</b> Você perdeu [${dropped.name}] pelo caminho!`);
+          updateHUD();
+          renderAllViews();
+          autoSave();
+          if (onDone) onDone();
+        });
+        break;
+      }
+
+      case "lost_digimon": {
+        const s = SEASONS[currentSeasonIdx];
+        const lostCandidate = { ...s.finals[Math.floor(Math.random() * s.finals.length)] };
+        lostCandidate.pwr = Math.round(getScaledEnemyPower('wild', lostCandidate.pwr) * 1.1);
+        currentLostDigi = lostCandidate;
+        onLostDigiDone = onDone;
+
+        const hasDisk = inventory.some(i => i.type === 'disk');
+        document.getElementById("lost-pay-disk-btn").style.display = hasDisk ? "block" : "none";
+        document.getElementById("lost-digi-desc").innerHTML = `Um <b>${lostCandidate.name}</b> ferido (${lostCandidate.pwr} DP) apareceu na trilha digital pedindo socorro!`;
+        document.getElementById("lost-digimon-modal").style.display = "flex";
+        break;
+      }
+
+      case "double_event":
+        log(`🔥 <b>EVENTO DUPLO!</b> 2 eventos ocorrerão seguidos do Chefe!`);
+        executeRandomSubEvent(() => {
+          executeRandomSubEvent(() => {
+            log(`🚨 <b>O CHEFÃO CHEGOU APÓS O EVENTO DUPLO!</b>`);
+            triggerBossEncounter();
+          });
+        });
+        break;
+    }
+  }
+
+  function executeRandomSubEvent(cb) {
+    const evts = ["item_chest", "wild_battle", "recruit", "lost_digimon"];
+    const pick = evts[Math.floor(Math.random() * evts.length)];
+    executeAdventureEvent(pick, cb);
+  }
+
+  function acceptLostDigiWithDisk() {
+    document.getElementById("lost-digimon-modal").style.display = "none";
+    const diskIdx = inventory.findIndex(i => i.type === 'disk');
+    if (diskIdx !== -1) {
+      inventory.splice(diskIdx, 1);
+      addDigimonToPlayer({ ...currentLostDigi, isFused: false });
+      log(`💖 <b>DIGIMON RESGATADO!</b> Você usou 1 Disquete e <b>${currentLostDigi.name}</b> entrou na sua equipe!`);
+      updateHUD();
+      renderAllViews();
+      autoSave();
+      if (onLostDigiDone) onLostDigiDone();
+    }
+  }
+
+  function acceptLostDigiWithAd() {
+    document.getElementById("lost-digimon-modal").style.display = "none";
+    AdManager.showRewardedAd("rescue_lost_digimon", () => {
+      addDigimonToPlayer({ ...currentLostDigi, isFused: false });
+      log(`💖 <b>DIGIMON RESGATADO VIA ANÚNCIO!</b> <b>${currentLostDigi.name}</b> foi curado e juntou-se a você!`);
+      updateHUD();
+      renderAllViews();
+      autoSave();
+      if (onLostDigiDone) onLostDigiDone();
+    }, () => {
+      log(`🐾 O Digimon ferido não foi resgatado e partiu.`);
+      if (onLostDigiDone) onLostDigiDone();
+    });
+  }
+
+  function declineLostDigi() {
+    document.getElementById("lost-digimon-modal").style.display = "none";
+    log(`🐾 Você ignorou o Digimon ferido e ele sumiu pela mata.`);
+    if (onLostDigiDone) onLostDigiDone();
+  }
+
+  function openModal(title, desc, sectors, onFinish) {
+    document.getElementById("modal-title").innerText = title;
+    document.getElementById("modal-desc").innerHTML = desc;
+    modalSectors = sectors;
+    onModalResolve = onFinish;
+    modalAngle = 0;
+    currentModalResult = null;
+    document.getElementById("decision-area").style.display = "none";
+    document.getElementById("modal-spin-btn").style.display = "block";
+    document.getElementById("modal-spin-btn").disabled = false;
+    document.getElementById("modal").style.display = "flex";
+    drawModalWheel();
+  }
+
+  function spinModalWheel() {
+    if (isModalSpinning) return;
+    isModalSpinning = true;
+    document.getElementById("modal-spin-btn").disabled = true;
+    document.getElementById("decision-area").style.display = "none";
+
+    const turns = 4 + Math.random() * 4;
+    const target = modalAngle + turns * Math.PI * 2 + Math.random() * Math.PI * 2;
+    const duration = 2200;
+    const start = performance.now();
+    const init = modalAngle;
+
+    function anim(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      modalAngle = init + (target - init) * ease;
+      drawModalWheel();
+
+      if (progress < 1) {
+        requestAnimationFrame(anim);
+      } else {
+        isModalSpinning = false;
+        currentModalResult = getSelectedSector(modalSectors, modalAngle);
+
+        document.getElementById("modal-spin-btn").style.display = "none";
+        document.getElementById("decision-area").style.display = "flex";
+        document.getElementById("decision-result-text").innerText = `Resultado Sorteado: ${currentModalResult.label}`;
+
+        const hasLaEle = inventory.some(i => i.type === 'la_ele');
+        if (hasLaEle) {
+          document.getElementById("decision-laele-btn").style.display = "block";
+          document.getElementById("decision-ad-spin-btn").style.display = "none";
+        } else {
+          document.getElementById("decision-laele-btn").style.display = "none";
+          document.getElementById("decision-ad-spin-btn").style.display = "block";
+        }
+      }
+    }
+    requestAnimationFrame(anim);
+  }
+
+  function confirmModalResult() {
+    document.getElementById("modal").style.display = "none";
+    if (onModalResolve && currentModalResult) {
+      onModalResolve(currentModalResult);
+    }
+  }
+
+  function triggerLaEle() {
+    const idx = inventory.findIndex(i => i.type === 'la_ele');
+    if (idx === -1) return;
+    inventory.splice(idx, 1);
+    log(`🪞 <b>LÁ ELE ATIVADO!</b> Item gasto. Girando a roleta novamente...`);
+    updateHUD();
+    renderAllViews();
+    autoSave();
+    spinModalWheel();
+  }
+
+  function triggerAdLaEle() {
+    AdManager.showRewardedAd("la_ele_reroll", () => {
+      log(`🪞 <b>LÁ ELE GRATUITO VIA ANÚNCIO!</b> Girando a roleta novamente...`);
+      spinModalWheel();
+    });
+  }
+
+  function openRecruitWheel(onDone) {
+    const s = SEASONS[currentSeasonIdx];
+    const normalPercent = 0.95 / s.recruits.length;
+
+    let sec = s.recruits.map((r, i) => ({
+      label: r.name,
+      percent: normalPercent,
+      color: ['#0077b6','#00b4d8','#023e8a','#0096c7'][i % 4],
+      type: "normal",
+      data: r
+    }));
+
+    sec.push({ label: "🌀 5% MULTIVERSO", percent: 0.05, color: "#f72585", type: "portal" });
+
+    openModal("RECRUTAMENTO DE ALIADO", "Todos aliados da temporada + 5% chance multiversal!", sec, (res) => {
+      if (res.type === "portal") {
+        const others = SEASONS.map((s, idx) => ({ name: s.name, idx })).filter(s => s.idx !== currentSeasonIdx);
+        const secPortal = others.map(os => ({ label: os.name, color: '#7209b7', data: os.idx }));
+
+        openModal("PORTAL DE TEMPORADAS", "Gire para escolher a dimensão!", secPortal, (sRes) => {
+          const recSeason = SEASONS[sRes.data];
+          const recSec = recSeason.recruits.map(r => ({ label: r.name, color: '#3a86ff', data: r }));
+          openModal(`RECRUTAR DE ${recSeason.name}`, "Sorteando recruta de outra era!", recSec, (finalRes) => {
+            addDigimonToPlayer({ ...finalRes.data, isFused: false });
+            log(`✨ Digimon de outra dimensão recrutado: <b>${finalRes.data.name}</b>!`);
+            if (onDone) onDone();
+          });
+        });
+      } else {
+        addDigimonToPlayer({ ...res.data, isFused: false });
+        log(`Você recrutou <b>${res.data.name}</b> (${res.data.stage})!`);
+        if (onDone) onDone();
+      }
+    });
+  }
+
+  function openFinalFormWheel(onDone) {
+    const curSeason = SEASONS[currentSeasonIdx];
+    const sec = curSeason.finals.map((f, i) => ({
+      label: f.name,
+      percent: 0.85 / curSeason.finals.length,
+      color: ['#f72585','#b5179e','#7209b7'][i % 3],
+      type: "local",
+      data: f
+    }));
+
+    sec.push({ label: "🌀 FORMA FINAL DE OUTRA ERA", percent: 0.15, color: "#ffb703", textColor: "#000", type: "multiverse_final" });
+
+    openModal("✨ FORMA FINAL LENDÁRIA ✨", "Sorteio supremo de formas Mega!", sec, (res) => {
+      if (res.type === "multiverse_final") {
+        const others = SEASONS.map((s, i) => ({ name: s.name, idx: i })).filter(s => s.idx !== currentSeasonIdx);
+        const sSec = others.map(os => ({ label: os.name, color: '#3a86ff', data: os.idx }));
+
+        openModal("PORTAL SUPREMO", "Qual temporada enviará a Forma Final?", sSec, (sRes) => {
+          const megaSec = SEASONS[sRes.data].finals.map(m => ({ label: m.name, color: '#f72585', data: m }));
+          openModal("FORMA FINAL MULTIVERSAL", "Escolhendo o Mega Lendário!", megaSec, (mRes) => {
+            addDigimonToPlayer({ ...mRes.data, isFused: false });
+            log(`👑 <b>FORMA FINAL OBTIDA:</b> ${mRes.data.name} (${mRes.data.pwr} DP)!`);
+            if (onDone) onDone();
+          });
+        });
+      } else {
+        addDigimonToPlayer({ ...res.data, isFused: false });
+        log(`👑 <b>FORMA FINAL OBTIDA:</b> ${res.data.name} (${res.data.pwr} DP)!`);
+        if (onDone) onDone();
+      }
+    });
+  }
+
+  function addDigimonToPlayer(digi) {
+    if (team.length < 4) {
+      team.push(digi);
+      log(`<b>${digi.name}</b> entrou na equipe ativa.`);
+    } else {
+      storage.push(digi);
+      log(`Equipe cheia! <b>${digi.name}</b> foi armazenado no Digivice Storage.`);
+    }
+    updateHUD();
+    renderAllViews();
+    autoSave();
+  }
+
+  function startBattleFlow(enemy, onBattleFinish) {
+    const canEvolve = team.some(d => d.next || EVOLUTIONS_CHAIN[d.name]);
+
+    if (!canEvolve) {
+      openCombatWheel(enemy, onBattleFinish);
+      return;
+    }
+
+    const rate = EVO_RATES[evoStep];
+    const evoQuadrants = create4QuadrantSectors(rate / 100, "EVOLUIR!", "FALHA", "#2ecc71", "#e74c3c");
+
+    openModal(
+      "DIGIVICE: PRÉ-BATALHA (4 QUADRANTES)",
+      `Chance de Evolução: <b>${rate}%</b> (distribuída em 4 quadrantes)`,
+      evoQuadrants,
+      (res) => {
+        if (res.isWin) {
+          log(`🌟 <b>DIGIVICE RESSONOU COM SUCESSO!</b>`);
+          evoStep = 0;
+          updateHUD();
+
+          const evolvables = team.filter(d => d.next || EVOLUTIONS_CHAIN[d.name]);
+          const whoSectors = evolvables.map((d, i) => ({
+            label: d.name,
+            color: ['#00b4d8','#ffb703','#9b5de5','#f72585'][i % 4],
+            data: d
+          }));
+
+          openModal("QUEM IRÁ EVOLUIR?", "Gire para decidir quem evolui!", whoSectors, (whoRes) => {
+            executeEvolution(whoRes.data);
+            openCombatWheel(enemy, onBattleFinish);
+          });
+        } else {
+          evoStep = Math.min(evoStep + 1, EVO_RATES.length - 1);
+          log(`❌ A evolução falhou. A taxa de ressonância subiu para <b>${EVO_RATES[evoStep]}%</b>.`);
+          updateHUD();
+          autoSave();
+          openCombatWheel(enemy, onBattleFinish);
+        }
+      }
+    );
+  }
+
+  function executeEvolution(digi) {
+    let nextForm = null;
+    if (digi.next) {
+      const evoName = digi.next;
+      const chainData = EVOLUTIONS_CHAIN[evoName] || { pwr: digi.pwr + 35, stage: "Champion" };
+      nextForm = {
+        name: evoName,
+        stage: chainData.stage || "Champion",
+        pwr: digi.pwr + 35,
+        img: evoName,
+        next: chainData.next || null
+      };
+    } else if (EVOLUTIONS_CHAIN[digi.name]) {
+      const chain = EVOLUTIONS_CHAIN[digi.name];
+      nextForm = {
+        name: chain.name,
+        stage: chain.stage,
+        pwr: chain.pwr,
+        img: chain.img,
+        next: chain.next || null
+      };
+    }
+
+    if (nextForm) {
+      log(`✨ <b>DIGI-EVOLUÇÃO!</b> ${digi.name} transformou-se em <b>${nextForm.name}</b> (${nextForm.stage}, ${nextForm.pwr} DP)!`);
+      digi.name = nextForm.name;
+      digi.stage = nextForm.stage;
+      digi.pwr = nextForm.pwr;
+      digi.img = nextForm.img;
+      digi.next = nextForm.next;
+      updateHUD();
+      renderAllViews();
+      autoSave();
+    }
+  }
+
+  function openCombatWheel(enemy, onCombatDone) {
+    pendingBattleEnemy = enemy;
+    pendingBattleOnDone = onCombatDone;
+
+    let totalTeam = team.reduce((a, b) => a + b.pwr, 0);
+    if (motivationActive) {
+      totalTeam += 35;
+      log(`🍖 <b>MOTIVAÇÃO APLICADA!</b> +35 DP inserido no confronto atual.`);
+      motivationActive = false;
+    }
+
+    let winChance = totalTeam / (totalTeam + enemy.pwr);
+    winChance = Math.max(0.05, Math.min(0.95, winChance));
+
+    const combatSectors = create4QuadrantSectors(
+      winChance,
+      `VITÓRIA (${Math.round(winChance*100)}%)`,
+      `DERROTA (${Math.round((1-winChance)*100)}%)`,
+      "#2ecc71",
+      "#e74c3c"
+    );
+
+    openModal(
+      `BATALHA: VS ${enemy.name.toUpperCase()} (4 QUADRANTES)`,
+      `Seu Time: <b>${totalTeam} DP</b> vs Inimigo: <b>${enemy.pwr} DP</b>`,
+      combatSectors,
+      (res) => {
+        if (res.isWin) {
+          log(`🏆 <b>VITÓRIA!</b> Você derrotou ${enemy.name}!`);
+          team.forEach(d => d.pwr += enemy.isBoss ? 25 : 8);
+
+          if (enemy.isWild && enemy.digiData) {
+            log(`🎉 <b>SELVAGEM CAPTURADO!</b> ${enemy.digiData.name} juntou-se ao seu grupo!`);
+            addDigimonToPlayer({ ...enemy.digiData, isFused: false });
+          }
+
+          if (enemy.isTamer) {
+            log(`💀 O Treinador Maligno foi derrotado e dropou uma recompensa!`);
+            openItemWheel(onCombatDone);
+            return;
+          }
+
+          if (enemy.isBoss) {
+            runStats.bossesDefeated++;
+            localStorage.setItem('digi_stats', JSON.stringify(runStats));
+
+            log(`🏆 <b>CHEFE DERROTADO!</b> Gire para receber seu drop de vitória!`);
+            openItemWheel(() => {
+              currentBossIdx++;
+              const s = SEASONS[currentSeasonIdx];
+
+              if (currentBossIdx >= s.bosses.length) {
+                handleSeasonCleared();
+                return;
+              }
+              updateHUD();
+              renderAllViews();
+              autoSave();
+              if (onCombatDone) onCombatDone();
+            });
+            return;
+          }
+
+          updateHUD();
+          renderAllViews();
+          autoSave();
+          if (onCombatDone) onCombatDone();
+        } else {
+          log(`💀 <b>DERROTA EM COMBATE!</b>`);
+          const diskIdx = inventory.findIndex(i => i.type === 'disk');
+
+          if (diskIdx !== -1) {
+            inventory.splice(diskIdx, 1);
+            log(`💾 <b>Disquete Consumido!</b> Os dados foram salvos do colapso.`);
+            updateHUD();
+            renderAllViews();
+            autoSave();
+
+            if (enemy.isBoss) {
+              log(`🔁 <b>REGRA DE CHEFÃO:</b> Reiniciando o confronto contra ${enemy.name} imediatamente!`);
+              openCombatWheel(enemy, onCombatDone);
+            } else {
+              if (onCombatDone) onCombatDone();
+            }
+          } else {
+            document.getElementById("revive-modal").style.display = "flex";
+          }
+        }
+      }
+    );
+  }
+
+  function cancelReviveGameOver() {
+    document.getElementById("revive-modal").style.display = "none";
+    runStats.deaths++;
+    runStats.attempts++;
+    localStorage.setItem('digi_stats', JSON.stringify(runStats));
+    alert(`GAME OVER! Seus dados foram deletados.`);
+    switchSeason(currentSeasonIdx);
+  }
+
+  function handleSeasonCleared() {
+    const s = SEASONS[currentSeasonIdx];
+    const nextSeasonIdx = currentSeasonIdx + 1;
+
+    runStats.seasonsCleared++;
+    localStorage.setItem('digi_stats', JSON.stringify(runStats));
+
+    let unlockedNew = false;
+    if (nextSeasonIdx < SEASONS.length && !unlockedSeasons.includes(nextSeasonIdx)) {
+      unlockedSeasons.push(nextSeasonIdx);
+      localStorage.setItem('digi_unlocked_seasons', JSON.stringify(unlockedSeasons));
+      unlockedNew = true;
+    }
+
+    let alertMsg = `🎉 PARABÉNS! Você zerou a temporada de ${s.name}!\n\nTIME VENCEDOR:\n` + team.map(d => `• ${d.name} (${d.pwr} DP)`).join('\n');
+    if (unlockedNew) alertMsg += `\n\n🔓 NOVA TEMPORADA DESBLOQUEADA: ${SEASONS[nextSeasonIdx].name}!`;
+    alert(alertMsg);
+
+    if (nextSeasonIdx < SEASONS.length) switchSeason(nextSeasonIdx);
+    else switchSeason(0);
+  }
+
+  function triggerBossEncounter() {
+    const s = SEASONS[currentSeasonIdx];
+    const boss = s.bosses[currentBossIdx];
+    turnsToBoss = 5;
+    updateHUD();
+
+    const scaledPwr = getScaledEnemyPower('boss', boss.basePwr);
+    log(`🚨 <b>ALERTA DE CHEFÃO!</b> <b>${boss.name}</b> (${scaledPwr} DP) bloqueia seu caminho!`);
+    startBattleFlow({ name: boss.name, pwr: scaledPwr, img: boss.img, isBoss: true });
+  }
+
+  function openSyncModal() {
+    autoSave();
+    const raw = localStorage.getItem('digi_current_game_state');
+    const base64 = btoa(encodeURIComponent(raw));
+    document.getElementById("export-save-text").value = base64;
+    document.getElementById("import-save-text").value = "";
+    document.getElementById("sync-modal").style.display = "flex";
+  }
+
+  function closeSyncModal() { document.getElementById("sync-modal").style.display = "none"; }
+
+  function copySaveCode() {
+    const txt = document.getElementById("export-save-text");
+    txt.select();
+    navigator.clipboard.writeText(txt.value);
+    alert("Código copiado! Cole no WhatsApp ou Bloco de Notas para abrir em outro dispositivo!");
+  }
+
+  function importSaveCode() {
+    const val = document.getElementById("import-save-text").value.trim();
+    if (!val) return alert("Cole um código de save válido!");
+    try {
+      const decoded = decodeURIComponent(atob(val));
+      localStorage.setItem('digi_current_game_state', decoded);
+      if (loadAutoSave()) {
+        alert("Progresso sincronizado com sucesso!");
+        closeSyncModal();
+        renderSeasonButtons();
+        setupAdventureWheel();
+        updateHUD();
+        renderAllViews();
+      } else {
+        alert("Falha ao ler os dados do save.");
+      }
+    } catch(e) {
+      alert("Código de save inválido ou corrompido!");
+    }
+  }
+
+  function moveToStorage(index) {
+    const removed = team.splice(index, 1)[0];
+    storage.push(removed);
+    log(`<b>${removed.name}</b> foi guardado no Storage.`);
+    updateHUD();
+    renderAllViews();
+    autoSave();
+  }
+
+  function moveToTeam(index) {
+    if (team.length >= 4) return alert("O time ativo já possui 4 parceiros! Guarde alguém no Storage primeiro.");
+    const digi = storage.splice(index, 1)[0];
+    team.push(digi);
+    log(`<b>${digi.name}</b> entrou na equipe ativa.`);
+    updateHUD();
+    renderAllViews();
+    autoSave();
+  }
+
+  function renderAllViews() {
+    const teamBox = document.getElementById("team-view");
+    teamBox.innerHTML = "";
+    team.forEach((d, idx) => {
+      const card = document.createElement("div");
+      card.className = "digi-card";
+      card.innerHTML = `
+        <img src="${getImgUrl(d.img)}" onerror="this.src='https://digimon.shadowsmith.com/img/koromon.jpg'">
+        <b style="font-size:0.75rem">${d.name}</b>
+        <span class="badge">${d.stage}</span>
+        <div style="font-size:0.72rem; margin:2px 0; color:var(--gold)">DP: <b>${d.pwr}</b></div>
+        <div class="card-actions">
+          <button onclick="moveToStorage(${idx})">Guardar</button>
+        </div>
+      `;
+      teamBox.appendChild(card);
+    });
+
+    const invBox = document.getElementById("inventory-view");
+    invBox.innerHTML = "";
+    if (inventory.length === 0) {
+      invBox.innerHTML = "<div style='color:#666; font-size:0.75rem; grid-column:1/-1;'>Inventário vazio.</div>";
+    } else {
+      inventory.forEach(item => {
+        const c = document.createElement("div");
+        c.className = "inv-card";
+        c.innerHTML = `
+          <div>
+            <b>${item.name}</b>
+            <div style="font-size:0.65rem; color:#aaa;">${item.desc}</div>
+          </div>
+          ${(item.type !== 'disk' && item.type !== 'la_ele') ? `<button onclick="useInventoryItem(${item.id})">Usar</button>` : `<small style="color:var(--gold); font-size:0.62rem; margin-top:4px;">(Passivo/Auto)</small>`}
+        `;
+        invBox.appendChild(c);
+      });
+    }
+
+    const storageBox = document.getElementById("storage-view");
+    storageBox.innerHTML = "";
+    if (storage.length === 0) {
+      storageBox.innerHTML = "<div style='color:#666; font-size:0.75rem; grid-column:1/-1;'>Nenhum parceiro no Storage.</div>";
+    } else {
+      storage.forEach((d, idx) => {
+        const card = document.createElement("div");
+        card.className = "digi-card";
+        card.style.padding = "4px";
+        card.innerHTML = `
+          <img src="${getImgUrl(d.img)}" style="width:38px; height:38px;" onerror="this.src='https://digimon.shadowsmith.com/img/koromon.jpg'">
+          <b style="font-size:0.68rem">${d.name}</b>
+          <div style="font-size:0.68rem; color:var(--gold)">${d.pwr} DP</div>
+          <button style="width:100%; font-size:0.6rem; margin-top:2px; cursor:pointer;" onclick="moveToTeam(${idx})">P/ Time</button>
+        `;
+        storageBox.appendChild(card);
+      });
+    }
+  }
+
+  // INICIALIZAÇÃO
+  if (loadAutoSave() && team.length > 0) {
+    renderSeasonButtons();
+    if (!isStarterPhase) setupAdventureWheel();
+    else setupStarterWheel();
+    updateHUD();
+    renderAllViews();
+    log("💾 Jogo salvo restaurado com sucesso! Bem-vindo de volta!");
+  } else {
+    renderSeasonButtons();
+    switchSeason(0);
+  }
+</script>
+</body>
+</html>
