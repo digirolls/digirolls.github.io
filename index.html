@@ -294,7 +294,7 @@
       border-radius: 12px;
       padding: clamp(10px, 3vw, 16px);
       width: 100%;
-      max-width: 400px;
+      max-width: 440px;
       max-height: 90vh;
       overflow-y: auto;
       display: flex;
@@ -344,24 +344,38 @@
       cursor: pointer;
     }
 
-    /* ANÚNCIO VISUAL */
+    /* FRAMEWORK DO ANÚNCIO (EMBUTIDO NA TELA) */
     .ad-modal { z-index: 9999; }
-    .ad-video-mock {
+    .ad-frame-wrapper {
       width: 100%;
-      height: 140px;
+      height: 270px;
       background: #000;
-      border: 1px dashed var(--gold);
       border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin: 10px 0;
-      color: #fff;
-      font-family: monospace;
+      overflow: hidden;
+      border: 2px solid var(--gold);
+      position: relative;
+      margin: 8px 0;
     }
-    .ad-progress { width: 80%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 8px; }
-    .ad-progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.1s linear; }
+    #ad-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+    }
+    .ad-progress {
+      width: 100%;
+      height: 8px;
+      background: #222;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 4px 0 8px 0;
+    }
+    .ad-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), #ff0054);
+      transition: width 0.1s linear;
+    }
 
     /* VIP CARD & CONTAGEM */
     .vip-card {
@@ -474,7 +488,7 @@
     </div>
   </div>
 
-  <!-- SUB-ROLETA MODAL COM TRAVA DE DECISÃO MANUAL -->
+  <!-- SUB-ROLETA MODAL (PAUSA E AGUARDA A ESCOLHA DO JOGADOR) -->
   <div class="subwheel-modal" id="modal">
     <div class="subwheel-content">
       <h3 id="modal-title" style="margin:0 0 4px 0; color:var(--gold); font-size:0.95rem;">SUB-ROLETA</h3>
@@ -484,9 +498,8 @@
       </div>
       <button class="btn-spin" id="modal-spin-btn" onclick="spinModalWheel()">GIRAR</button>
       
-      <!-- O JOGO PAUSA AQUI ATÉ O JOGADOR CLICAR EM UMA DAS OPÇÕES -->
       <div class="decision-area" id="decision-area">
-        <div id="decision-result-text" style="font-weight:bold; color:var(--gold); font-size:0.9rem; margin-bottom:2px;"></div>
+        <div id="decision-result-text" style="font-weight:bold; color:var(--gold); font-size:0.95rem; margin-bottom:2px;"></div>
         <button class="btn-decision-accept" onclick="confirmModalResult()">✅ Aceitar Resultado</button>
         <button class="btn-decision-laele" id="decision-laele-btn" style="display:none;" onclick="triggerLaEle()">🪞 Usar Item "Lá Ele!" (Girar Novamente)</button>
         <button class="btn-decision-ad-spin" id="decision-ad-spin-btn" style="display:none;" onclick="triggerAdLaEle()">📺 Assistir Anúncio para Girar Novamente (Grátis)</button>
@@ -502,7 +515,7 @@
       
       <div style="background:rgba(255,183,3,0.1); border:1px dashed var(--gold); border-radius:8px; padding:10px; margin:10px 0;">
         <b style="color:var(--gold); font-size:0.9rem;">SEGUNDA CHANCE DISPONÍVEL!</b>
-        <p style="font-size:0.75rem; margin:4px 0;">Assista ao anúncio para receber <b>+1 Disquete de Emergência 💾</b> e continuar!</p>
+        <p style="font-size:0.75rem; margin:4px 0;">Assista ao anúncio no framework para receber <b>+1 Disquete de Emergência 💾</b> e continuar!</p>
         <button class="btn-spin" style="width:100%; background:var(--green); color:#000;" onclick="AdManager.requestReviveAd()">📺 ASSISTIR ANÚNCIO & REVIVER</button>
       </div>
 
@@ -527,8 +540,8 @@
   <div class="info-modal" id="pitch-ad-modal">
     <div class="info-content" style="text-align:center;">
       <h2 style="color:var(--gold); margin:0 0 4px 0; font-size:1.2rem;">⚡ OFERTA EXCLUSIVA!</h2>
-      <p style="font-size:0.85rem; font-weight:bold; margin:4px 0; color:#fff;">Cansado de assistir anúncios?</p>
-      <p style="font-size:0.78rem; color:#ccc; margin:0 0 6px 0;">Desbloqueie o Passe VIP e tenha <b>Reviver Ilimitado</b>, <b>Lá Ele Infinito</b> e <b>Resgates Imediatos</b> sem esperar!</p>
+      <p style="font-size:0.85rem; font-weight:bold; margin:4px 0; color:#fff;">Cansado de esperar os anúncios?</p>
+      <p style="font-size:0.78rem; color:#ccc; margin:0 0 6px 0;">Desbloqueie o Passe VIP e tenha <b>Reviver Ilimitado</b>, <b>Lá Ele Infinito</b> e <b>Resgates Imediatos</b> sem comerciais!</p>
 
       <div class="vip-card">
         <div style="font-size:0.8rem; color:#aaa; margin-bottom:2px;">PROMOÇÃO RELÂMPAGO:</div>
@@ -540,7 +553,7 @@
         <button class="vip-btn-pay" onclick="openPromoPaymentLink()">LIBERAR VIP POR R$ 19,99</button>
       </div>
 
-      <button style="background:transparent; border:none; color:#888; font-size:0.72rem; text-decoration:underline; cursor:pointer; margin-top:4px;" onclick="closePitchModal()">Continuar jogando grátis com anúncios</button>
+      <button style="background:transparent; border:none; color:#888; font-size:0.72rem; text-decoration:underline; cursor:pointer; margin-top:4px;" onclick="closePitchModal()">Continuar jogando grátis</button>
     </div>
   </div>
 
@@ -564,16 +577,21 @@
     </div>
   </div>
 
-  <!-- TELA DE ANÚNCIO (MONETAG DIRECT LINK + COUNTDOWN) -->
+  <!-- FRAMEWORK DO ANÚNCIO (EXIBIÇÃO DENTRO DA PÁGINA COM O CONTADOR VISÍVEL) -->
   <div class="ad-modal" id="ad-player-modal">
-    <div class="ad-content">
-      <div style="font-size:0.72rem; color:var(--accent); letter-spacing:1px; font-weight:bold;">PATROCINADOR // DIGIMON NETWORK</div>
-      <div class="ad-video-mock">
-        <div style="font-size:1.5rem; margin-bottom:2px;">📺</div>
-        <div id="ad-timer-text" style="font-size:0.82rem; font-weight:bold;">Anúncio em andamento: 15s</div>
-        <div class="ad-progress"><div class="ad-progress-bar" id="ad-bar"></div></div>
+    <div class="ad-content" style="max-width: 440px;">
+      <div style="font-size:0.75rem; color:var(--accent); letter-spacing:1px; font-weight:bold;">PATROCINADOR // DIGIMON NETWORK</div>
+      
+      <!-- CONTADOR DE TEMPO BEM VISÍVEL -->
+      <div id="ad-timer-text" style="font-size:1.15rem; font-weight:900; color:var(--gold); margin:6px 0;">⏳ Validando anúncio: 15s</div>
+      <div class="ad-progress"><div class="ad-progress-bar" id="ad-bar"></div></div>
+
+      <!-- O ANÚNCIO CARREGA AQUI DENTRO (SEM ABRIR NOVA PÁGINA) -->
+      <div class="ad-frame-wrapper">
+        <iframe id="ad-iframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
       </div>
-      <small style="color:#aaa; font-size:0.68rem;">Sua recompensa será entregue assim que o anúncio terminar.</small>
+
+      <small style="color:#aaa; font-size:0.7rem;">Sua recompensa será validada automaticamente ao zerar o cronômetro.</small>
     </div>
   </div>
 
@@ -597,7 +615,7 @@
 
 <script>
   /* =========================================================================
-     SEGURANÇA BÁSICA ANTI-INSPECT / F12
+     SEGURANÇA ANTI-INSPECT / F12
      ========================================================================= */
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.onkeydown = function(e) {
@@ -607,7 +625,7 @@
   };
 
   /* =========================================================================
-     CONFIGURAÇÃO DE MONETIZAÇÃO COM O DIRECT LINK FORNECIDO
+     CONFIGURAÇÃO DE LINKS E PROMOÇÃO
      ========================================================================= */
   const MONETAG_DIRECT_LINK = "https://uplcm.com/4/12150351";
   const PAYMENT_LINK_PROMO = "https://mpago.la/1u5HDmK";    // R$ 19,99
@@ -730,7 +748,7 @@
   }
 
   /* =========================================================================
-     AD MANAGER COM DIRECT LINK E CONTAGEM REGRESSIVA
+     AD MANAGER: CARREGA DENTRO DO FRAMEWORK (SEM ABRIR NOVA ABA)
      ========================================================================= */
   const AdManager = {
     showRewardedAd: function(rewardReason, onSuccess, onFail) {
@@ -740,21 +758,20 @@
         return;
       }
 
-      log(`📺 <b>Carregando anúncio patrocinado...</b>`);
-
-      // Dispara o Direct Link da Monetag em nova aba
-      try {
-        window.open(MONETAG_DIRECT_LINK, '_blank');
-      } catch(e) {}
+      log(`📺 <b>Carregando anúncio patrocinado no framework...</b>`);
 
       const modal = document.getElementById("ad-player-modal");
       const timerText = document.getElementById("ad-timer-text");
       const bar = document.getElementById("ad-bar");
+      const iframe = document.getElementById("ad-iframe");
+
+      // Carrega o link da Monetag dentro do iframe do framework
+      iframe.src = MONETAG_DIRECT_LINK;
       modal.style.display = "flex";
 
       let secondsLeft = 15;
       bar.style.width = "0%";
-      timerText.innerText = `Anúncio em andamento: ${secondsLeft}s`;
+      timerText.innerText = `⏳ Validando anúncio: ${secondsLeft}s`;
 
       const interval = setInterval(() => {
         secondsLeft--;
@@ -762,11 +779,13 @@
         bar.style.width = `${percent}%`;
 
         if (secondsLeft > 0) {
-          timerText.innerText = `Anúncio em andamento: ${secondsLeft}s`;
+          timerText.innerText = `⏳ Validando anúncio: ${secondsLeft}s`;
         } else {
           clearInterval(interval);
+          // Limpa o iframe para parar de rodar no fundo
+          iframe.src = "about:blank";
           modal.style.display = "none";
-          log(`✨ <b>Anúncio concluído!</b> Recompensa liberada com sucesso.`);
+          log(`✨ <b>Anúncio validado com sucesso!</b> Recompensa liberada.`);
 
           adsWatchedCount++;
           localStorage.setItem('digi_ads_watched_count', adsWatchedCount.toString());
@@ -1569,7 +1588,7 @@
   }
 
   /* =========================================================================
-     SUB-ROLETA: AGUARDA O JOGADOR DECIDIR (SEM TIMEOUT AUTOMÁTICO)
+     SUB-ROLETA: TRAVAMENTO COMPLETO (ESPERA DECISÃO DO JOGADOR)
      ========================================================================= */
   function openModal(title, desc, sectors, onFinish) {
     document.getElementById("modal-title").innerText = title;
@@ -1610,7 +1629,7 @@
         isModalSpinning = false;
         currentModalResult = getSelectedSector(modalSectors, modalAngle);
 
-        // O BOTÃO DE GIRAR SOME E A ÁREA DE DECISÃO FICA TRAVADA ESPERANDO O JOGADOR
+        // AQUI A ROLETA PARA E NUNCA FECHA SOZINHA
         document.getElementById("modal-spin-btn").style.display = "none";
         document.getElementById("decision-area").style.display = "flex";
         document.getElementById("decision-result-text").innerText = `Resultado: ${currentModalResult.label}`;
